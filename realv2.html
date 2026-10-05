@@ -1,0 +1,2522 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+	<title>Những ngày tháng học đường</title>
+	<style>
+		:root {
+			--ink: #193047;
+			--muted: #6b7f91;
+			--cream: #fff9ed;
+			--paper: #fffdf8;
+			--teal: #1c9c95;
+			--teal-dark: #12716f;
+			--coral: #ef755e;
+			--yellow: #f7c95b;
+			--line: #d9e5e5;
+			--shadow: 0 24px 60px rgba(25, 48, 71, 0.16);
+		}
+
+		* { box-sizing: border-box; }
+		html, body { margin: 0; min-height: 100%; }
+		body {
+			background: #e9f4f2;
+			color: var(--ink);
+			font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+			padding: 18px;
+		}
+
+		.app {
+			width: min(1180px, 100%);
+			margin: auto;
+			position: relative;
+			background: var(--paper);
+			border: 1px solid rgba(28, 156, 149, .2);
+			border-radius: 24px;
+			overflow: hidden;
+			box-shadow: var(--shadow);
+		}
+
+		header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 20px;
+			padding: 18px 24px;
+			background: var(--ink);
+			color: white;
+		}
+
+		.brand { display: flex; align-items: center; gap: 12px; }
+		.brand-mark {
+			display: grid;
+			place-items: center;
+			width: 42px; height: 42px;
+			border-radius: 13px;
+			background: var(--yellow);
+			color: var(--ink);
+			font-size: 23px;
+		}
+		h1, h2, p { margin: 0; }
+		h1 { font-size: clamp(1.1rem, 2vw, 1.45rem); letter-spacing: .02em; }
+		.subtitle { color: #b7d2d5; font-size: .86rem; margin-top: 3px; }
+		.score-box { text-align: right; font-size: .8rem; color: #b7d2d5; }
+		.score-box strong { display: block; color: var(--yellow); font-size: 1.22rem; }
+
+		.main { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(320px, .95fr); }
+		.scene-wrap { padding: 18px; background: var(--cream); }
+		.scene-frame { position: relative; overflow: hidden; border-radius: 17px; border: 3px solid #c7dfd9; background: #b8ddd1; }
+		canvas { display: block; width: 100%; aspect-ratio: 16 / 10; image-rendering: pixelated; }
+		.mobile-controls { position: absolute; inset: 0; z-index: 3; display: none; align-items: flex-end; justify-content: space-between; padding: 16px; pointer-events: none; touch-action: none; }
+		.mobile-stick { position: relative; display: grid; place-items: center; width: 116px; height: 116px; flex: 0 0 116px; padding: 0; border: 2px solid rgba(255, 255, 255, .8); border-radius: 50%; background: rgba(25, 48, 71, .45); box-shadow: 0 4px 18px rgba(25, 48, 71, .24); pointer-events: auto; touch-action: none; user-select: none; }
+		.mobile-stick::before, .mobile-stick::after { position: absolute; content: ""; background: rgba(255, 255, 255, .38); }
+		.mobile-stick::before { width: 1px; height: 78%; }
+		.mobile-stick::after { width: 78%; height: 1px; }
+		.mobile-stick-knob { position: relative; z-index: 1; width: 48px; height: 48px; border: 2px solid #fff; border-radius: 50%; background: #24a4c7; box-shadow: 0 2px 8px rgba(0, 0, 0, .3); pointer-events: none; }
+		.mobile-interact { display: grid; place-items: center; width: 76px; height: 76px; margin: 0 4px 6px 0; padding: 0; border: 2px solid #fff; border-radius: 50%; outline: 2px solid #1688c5; outline-offset: 2px; background: #2b9ed8; color: #fff; font-size: 2rem; box-shadow: 0 4px 18px rgba(25, 48, 71, .28); pointer-events: auto; touch-action: manipulation; }
+		.mobile-interact:hover { background: #1688c5; color: #fff; }
+		.mobile-controls.mobile-enabled { display: flex; }
+		.hint {
+			position: absolute; left: 14px; bottom: 12px;
+			padding: 7px 10px; border-radius: 8px;
+			background: rgba(25, 48, 71, .86); color: white; font-size: .78rem;
+			pointer-events: none;
+		}
+		.paper-overlay { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; padding: 24px; background: rgba(25, 48, 71, .52); pointer-events: none; }
+		.paper-overlay.hidden { display: none; }
+		.paper-slip { width: min(520px, 100%); max-height: 100%; overflow-y: auto; padding: clamp(18px, 4vw, 32px); background: repeating-linear-gradient(#fffdf2 0, #fffdf2 30px, #d9e5df 31px, #fffdf2 32px); color: #394d59; box-shadow: 0 14px 36px rgba(18, 39, 55, .3); clip-path: polygon(0 0, 100% 0, 100% 96%, 96% 100%, 92% 97%, 88% 100%, 84% 97%, 80% 100%, 76% 97%, 72% 100%, 68% 97%, 64% 100%, 60% 97%, 56% 100%, 52% 97%, 48% 100%, 44% 97%, 40% 100%, 36% 97%, 32% 100%, 28% 97%, 24% 100%, 20% 97%, 16% 100%, 12% 97%, 8% 100%, 4% 97%, 0 100%); }
+		.paper-slip h3 { margin-bottom: 12px; color: var(--teal-dark); font-size: 1rem; letter-spacing: .08em; }
+		.paper-slip p { white-space: pre-line; line-height: 1.65; }
+		.paper-instruction { margin-top: 18px; color: var(--coral); font-size: .84rem; font-weight: 800; }
+
+		.side { padding: 22px; border-left: 1px solid var(--line); min-height: 560px; display: flex; flex-direction: column; gap: 16px; }
+		.eyebrow { color: var(--teal-dark); font-size: .72rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+		.side h2 { font-size: clamp(1.25rem, 2vw, 1.65rem); line-height: 1.13; margin-top: 4px; }
+		.progress { height: 8px; background: #e2eeee; border-radius: 99px; overflow: hidden; }
+		.progress span { display: block; height: 100%; width: 0; background: var(--teal); transition: width .3s ease; }
+		.dialogue { line-height: 1.6; color: #426072; font-size: .96rem; min-height: 110px; }
+		#text { white-space: pre-line; }
+		.speaker { color: var(--coral); font-weight: 800; margin-bottom: 5px; }
+		.choices { display: grid; gap: 10px; }
+		.choice, .action {
+			border: 1px solid #c8dddd; border-radius: 11px; background: white; color: var(--ink);
+			padding: 11px 12px; text-align: left; font: inherit; cursor: pointer; transition: transform .15s, border-color .15s, background .15s;
+		}
+		.choice:hover, .action:hover { transform: translateY(-2px); border-color: var(--teal); background: #f2fbf9; }
+		.choice:disabled { cursor: default; transform: none; opacity: .7; }
+		.choice.correct { border-color: var(--teal); background: #dcf6ee; }
+		.choice.near { border-color: var(--yellow); background: #fff8dc; }
+		.choice.wrong { border-color: var(--coral); background: #fff0eb; }
+		.choice b { display: inline-grid; place-items: center; width: 24px; height: 24px; margin-right: 7px; border-radius: 7px; background: #eaf2f3; color: var(--teal-dark); }
+		.feedback { min-height: 40px; color: var(--teal-dark); font-size: .87rem; line-height: 1.4; }
+		.learning-note { padding: 12px 14px; border-left: 4px solid var(--coral); border-radius: 6px; background: #fff0eb; color: #75483f; font-size: .86rem; line-height: 1.5; }
+		.learning-note strong { display: block; margin-bottom: 4px; color: #a34f3f; }
+		.summary { max-height: 260px; overflow: auto; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: .78rem; }
+		.summary h3 { margin: 12px 0 8px; font-size: 1rem; }
+		.summary table { width: 100%; border-collapse: collapse; }
+		.summary th, .summary td { padding: 7px 5px; border-top: 1px solid var(--line); text-align: left; vertical-align: top; }
+		.summary th { color: var(--teal-dark); }
+		.summary td strong { display: block; margin-bottom: 3px; }
+		.summary .score-cell { white-space: nowrap; font-weight: 800; }
+		.summary .positive { color: var(--teal-dark); font-weight: 800; }
+		.summary .needs-care { color: var(--coral); font-weight: 800; }
+		.action { width: 100%; background: var(--teal); color: white; border-color: var(--teal); text-align: center; font-weight: 800; }
+		.action:hover { background: var(--teal-dark); color: white; }
+		.action.secondary { background: white; color: var(--teal-dark); }
+		.hidden { display: none; }
+		.start-menu {
+			position: fixed;
+			inset: 0;
+			z-index: 40;
+			display: grid;
+			place-items: center;
+			padding: 24px;
+			background: linear-gradient(135deg, rgba(25, 48, 71, .98), rgba(18, 113, 111, .96));
+			color: white;
+			text-align: center;
+		}
+		.start-menu.hidden { display: none; }
+		.start-content { display: grid; justify-items: center; gap: 16px; }
+		.start-content h2 { font-size: clamp(2rem, 6vw, 4rem); }
+		.start-content p { color: #d4e7e4; }
+		.start-button { width: auto; min-width: 180px; padding: 14px 32px; background: var(--yellow); border-color: var(--yellow); color: var(--ink); font-size: 1.1rem; }
+		.start-button:hover { background: #ffda75; color: var(--ink); }
+		.quit-button { position: absolute; right: 24px; bottom: 24px; width: auto; min-width: 100px; }
+		.menu-status { position: absolute; right: 24px; bottom: 78px; max-width: min(360px, calc(100% - 48px)); color: #fff1cf; font-size: .86rem; }
+		.confirm-overlay { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 20px; background: rgba(16, 41, 59, .55); }
+		.confirm-overlay.hidden { display: none; }
+		.confirm-dialog { width: min(460px, 100%); padding: 28px; border: 1px solid #d8e8ef; border-radius: 12px; background: #fff; color: var(--ink); text-align: center; box-shadow: 0 20px 55px rgba(15, 45, 65, .28); }
+		.confirm-dialog h2 { font-size: clamp(1.25rem, 4vw, 1.65rem); line-height: 1.35; }
+		.confirm-actions { display: flex; justify-content: center; gap: 14px; margin-top: 24px; }
+		.confirm-button { width: auto; min-width: 116px; text-align: center; }
+		.confirm-button.confirm-yes { border: 2px solid #087fc1; outline: 2px solid #9bdcff; outline-offset: 2px; background: #2b9ed8; color: #fff; }
+		.confirm-button.confirm-yes:hover { border-color: #066da8; background: #1688c5; color: #fff; }
+		.confirm-button.confirm-no { border: 1px solid #53aeda; background: #fff; color: #167fb5; }
+		.confirm-button.confirm-no:hover { border-color: #1688c5; background: #fff; color: #096b9e; }
+		@media (max-width: 420px) { .confirm-dialog { padding: 24px 18px; } .confirm-actions { gap: 10px; } .confirm-button { min-width: 104px; } }
+		.scene-transition {
+			position: fixed;
+			inset: 0;
+			z-index: 20;
+			display: grid;
+			place-items: center;
+			background: #000;
+			color: white;
+			opacity: 0;
+			visibility: hidden;
+			pointer-events: none;
+			transition: opacity .42s ease, visibility 0s linear .42s;
+		}
+		.scene-transition .skip-introduction, .scene-transition .continue-introduction { position: absolute; bottom: 24px; width: auto; padding: 11px 18px; pointer-events: auto; }
+		.scene-transition .skip-introduction { left: 24px; }
+		.scene-transition .continue-introduction { right: 24px; }
+		.scene-transition.show {
+			opacity: 1;
+			visibility: visible;
+			pointer-events: auto;
+			transition-delay: 0s;
+		}
+		.scene-transition span { font-size: clamp(1rem, 2vw, 1.45rem); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+		.scene-transition.evaluation-cutscene span { width: min(680px, calc(100% - 40px)); font-size: clamp(1.2rem, 3vw, 2rem); letter-spacing: 0; line-height: 1.4; text-align: center; text-transform: none; }
+		.scene-transition.objective-cutscene #transitionLabel, .scene-transition.rules-cutscene #transitionLabel, .scene-transition.mission-cutscene #transitionLabel, .scene-transition.tip-cutscene #transitionLabel, .scene-transition.gameplay-cutscene #transitionLabel, .scene-transition.tutorial-cutscene #transitionLabel { display: grid; justify-items: center; gap: 18px; width: min(760px, calc(100% - 40px)); text-align: center; text-transform: none; letter-spacing: 0; }
+		.scene-transition.objective-cutscene #transitionLabel strong, .scene-transition.rules-cutscene #transitionLabel strong, .scene-transition.mission-cutscene #transitionLabel strong, .scene-transition.tip-cutscene #transitionLabel strong, .scene-transition.gameplay-cutscene #transitionLabel strong { color: #f7c95b; font: 800 clamp(2.4rem, 8vw, 5rem) Georgia, serif; }
+		.scene-transition.objective-cutscene #transitionLabel span, .scene-transition.rules-cutscene #transitionLabel span, .scene-transition.mission-cutscene #transitionLabel span, .scene-transition.tip-cutscene #transitionLabel span, .scene-transition.gameplay-cutscene #transitionLabel span { width: min(680px, 100%); color: #fff; font: 500 clamp(1rem, 2vw, 1.25rem) "Trebuchet MS", "Segoe UI", sans-serif; line-height: 1.65; letter-spacing: 0; text-align: left; text-transform: none; white-space: pre-line; word-break: normal; overflow-wrap: break-word; }
+		.scene-transition.tutorial-cutscene #transitionLabel { font-size: clamp(1.5rem, 4vw, 2.5rem); letter-spacing: 0; text-transform: none; }
+		.scene-transition.title-card-cutscene #transitionLabel { font: 800 clamp(2rem, 7vw, 4.5rem) Georgia, serif; letter-spacing: 0; text-align: center; text-transform: none; animation: title-card-fade 5s ease both; }
+		@keyframes title-card-fade { 0%, 10% { opacity: 0; } 22%, 72% { opacity: 1; } 100% { opacity: 0; } }
+		.scene-transition.bad-ending-cutscene #transitionLabel { display: flex; flex-direction: column; gap: 12px; }
+		.scene-transition.bad-ending-cutscene #transitionLabel strong { color: #8b0015; font-size: 2.6rem; font-weight: 900; line-height: 1.1; }
+		.scene-transition.bad-ending-cutscene #transitionLabel span { color: white; font-size: 1.6rem; font-weight: 800; }
+		@media (max-width: 800px) {
+			.scene-transition.bad-ending-cutscene #transitionLabel strong { font-size: 2rem; }
+			.scene-transition.bad-ending-cutscene #transitionLabel span { font-size: 1.2rem; }
+		}
+		.outro {
+			position: absolute;
+			inset: 0;
+			z-index: 30;
+			display: grid;
+			place-items: center;
+			padding: 28px;
+			background: linear-gradient(145deg, rgba(25, 48, 71, .98), rgba(18, 113, 111, .97));
+			color: white;
+			text-align: center;
+			opacity: 0;
+			visibility: hidden;
+			transition: opacity .7s ease, visibility 0s linear .7s;
+		}
+		.outro.show { opacity: 1; visibility: visible; transition-delay: 0s; }
+		.outro-content { width: min(680px, 100%); animation: outro-arrive .8s ease both; }
+		.outro-kicker { color: var(--yellow); font-size: .8rem; font-weight: 800; letter-spacing: .16em; }
+		.outro h2 { margin: 14px 0; font-size: clamp(1.8rem, 5vw, 3.2rem); }
+		.outro p { color: #e2efec; font-size: clamp(1rem, 2vw, 1.2rem); line-height: 1.7; }
+		.outro .action { width: auto; margin-top: 28px; padding: 12px 22px; }
+		@keyframes outro-arrive { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+		.escape-fail {
+			position: absolute; inset: 0; z-index: 35; display: grid; place-items: center; padding: 28px;
+			background: rgba(25, 48, 71, .96); color: white; text-align: center;
+		}
+		.escape-fail.hidden { display: none; }
+		.escape-fail-content { width: min(620px, 100%); }
+		.escape-fail h2 { margin-bottom: 24px; font-size: clamp(1.3rem, 4vw, 2.2rem); line-height: 1.45; white-space: pre-line; }
+		.escape-fail .action { width: auto; padding: 12px 22px; }
+		.escape-fail.good-ending, .escape-fail.safe-ending, .escape-fail.true-ending { background: #000; }
+		.escape-fail.bad-ending, .escape-fail.true-ending { background: #000; }
+		#escapeFailMessage { display: grid; gap: 12px; }
+		#escapeFailMessage strong { color: #39b54a; }
+		.escape-fail.bad-ending #escapeFailMessage strong { color: #8b0015; }
+		#escapeFailMessage span { color: white; white-space: pre-line; }
+
+		.controls { display: flex; flex-wrap: wrap; gap: 7px; margin-top: auto; padding-top: 8px; border-top: 1px solid var(--line); color: var(--muted); font-size: .78rem; }
+		kbd { padding: 3px 6px; border: 1px solid #c8d4d7; border-bottom-width: 2px; border-radius: 5px; background: #f7fbfa; color: var(--ink); font-family: inherit; }
+		.toast { min-height: 20px; color: var(--coral); font-size: .84rem; font-weight: 700; }
+
+		@media (max-width: 800px) {
+			body { padding: 0; }
+			.app { border-radius: 0; }
+			header { padding: 15px; }
+			.main { grid-template-columns: 1fr; }
+			.side { min-height: auto; border-left: 0; border-top: 1px solid var(--line); padding: 18px; }
+			.scene-wrap { padding: 10px; }
+			.hint { font-size: .7rem; }
+			.side { overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; }
+			.side > * { flex-shrink: 0; }
+			.controls { margin-top: 0; }
+		}
+		@media (min-width: 801px) and (max-height: 700px) {
+			body:not(.mobile-device) .app {
+				height: calc(100vh - 36px);
+				display: flex;
+				flex-direction: column;
+			}
+			body:not(.mobile-device) header { flex: 0 0 auto; }
+			body:not(.mobile-device) .main { flex: 1; min-height: 0; }
+			body:not(.mobile-device) .scene-wrap { min-height: 0; display: flex; }
+			body:not(.mobile-device) .scene-frame { width: 100%; height: 100%; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); }
+			body:not(.mobile-device) canvas { width: auto; height: auto; max-width: 100%; max-height: 100%; aspect-ratio: 16 / 10; object-fit: contain; justify-self: center; align-self: center; }
+			body:not(.mobile-device) .side { min-height: 0; overflow-y: auto; }
+		}
+		@media (max-width: 800px) and (max-height: 700px) {
+			body:not(.mobile-device) .app { height: 100vh; display: flex; flex-direction: column; }
+			body:not(.mobile-device) header { flex: 0 0 auto; }
+			body:not(.mobile-device) .main { flex: 1; min-height: 0; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, .9fr) minmax(0, 1.1fr); }
+			body:not(.mobile-device) .scene-wrap { min-height: 0; display: flex; }
+			body:not(.mobile-device) .scene-frame { width: 100%; height: 100%; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); }
+			body:not(.mobile-device) canvas { width: auto; height: auto; max-width: 100%; max-height: 100%; aspect-ratio: 16 / 10; object-fit: contain; justify-self: center; align-self: center; }
+			body:not(.mobile-device) .side { min-height: 0; overflow-y: auto; }
+		}
+		body.mobile-device { overflow: hidden; }
+		@media (orientation: landscape) {
+			body.mobile-device .app {
+				position: fixed;
+				inset: 0;
+				width: 100vw;
+				height: 100vh;
+				height: 100dvh;
+				max-width: none;
+				margin: 0;
+				border-radius: 0;
+				display: flex;
+				flex-direction: column;
+			}
+			body.mobile-device header { flex: 0 0 auto; padding: clamp(6px, 1.5vh, 12px) clamp(10px, 2vw, 18px); }
+			body.mobile-device .main {
+				flex: 1;
+				min-height: 0;
+				grid-template-columns: minmax(0, 1.65fr) minmax(0, .95fr);
+			}
+			body.mobile-device .scene-wrap { min-width: 0; min-height: 0; display: flex; padding: clamp(6px, 1.5vh, 12px); }
+			body.mobile-device .scene-frame { width: 100%; height: 100%; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: center; }
+			body.mobile-device canvas { width: auto; height: auto; max-width: 100%; max-height: 100%; aspect-ratio: 16 / 10; object-fit: contain; justify-self: center; align-self: center; }
+			body.mobile-device .side { min-width: 0; min-height: 0; overflow-y: auto; border-top: 0; border-left: 1px solid var(--line); padding: clamp(8px, 1.8vh, 14px); gap: clamp(5px, 1vh, 10px); }
+			body.mobile-device .dialogue { min-height: 0; }
+			body.mobile-device .side { overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; }
+			body.mobile-device .side > * { flex-shrink: 0; }
+			body.mobile-device .controls { margin-top: 0; }
+		}
+		@media (orientation: portrait) {
+			body.mobile-device .app {
+				position: fixed;
+				top: 0;
+				left: 100vw;
+				width: 100dvh;
+				height: 100vw;
+				max-width: none;
+				margin: 0;
+				border-radius: 0;
+				transform: rotate(90deg);
+				transform-origin: top left;
+				display: flex;
+				flex-direction: column;
+			}
+			body.mobile-device header { flex: 0 0 auto; padding: 8px 14px; }
+			body.mobile-device .main {
+				flex: 1;
+				min-height: 0;
+				grid-template-columns: minmax(0, 1.65fr) minmax(250px, .95fr);
+			}
+			body.mobile-device .scene-wrap { min-width: 0; min-height: 0; display: flex; padding: 8px; }
+			body.mobile-device .scene-frame { width: 100%; height: 100%; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: center; }
+			body.mobile-device canvas { width: auto; height: auto; max-width: 100%; max-height: 100%; aspect-ratio: 16 / 10; object-fit: contain; justify-self: center; align-self: center; }
+			body.mobile-device .side { min-width: 0; min-height: 0; overflow-y: auto; border-top: 0; border-left: 1px solid var(--line); padding: 10px; gap: 8px; }
+			body.mobile-device .controls { padding-top: 5px; }
+			body.mobile-device #startMenu,
+			body.mobile-device #confirmOverlay {
+				inset: auto;
+				top: 0;
+				left: 100vw;
+				width: 100dvh;
+				height: 100vw;
+				transform: rotate(90deg);
+				transform-origin: top left;
+			}
+		}
+		@media (orientation: portrait) {
+			body.mobile-device.mobile-landscape-left .app {
+				top: 100vh;
+				left: 0;
+				transform: rotate(-90deg);
+			}
+			body.mobile-device.mobile-landscape-left #startMenu,
+			body.mobile-device.mobile-landscape-left #confirmOverlay {
+				top: 100vh;
+				left: 0;
+				transform: rotate(-90deg);
+			}
+		}
+		body.game-fullscreen { padding: 0; overflow: hidden; }
+		body.game-fullscreen .app {
+			position: fixed;
+			inset: 0;
+			width: 100vw;
+			height: 100vh;
+			height: 100dvh;
+			max-width: none;
+			margin: 0;
+			border-radius: 0;
+			display: flex;
+			flex-direction: column;
+		}
+		body.game-fullscreen header { flex: 0 0 auto; padding: clamp(6px, 1.5vh, 12px) clamp(10px, 2vw, 18px); }
+		body.game-fullscreen .main {
+			flex: 1;
+			min-height: 0;
+			grid-template-columns: minmax(0, 1.65fr) minmax(0, .95fr);
+			grid-template-rows: minmax(0, 1fr);
+		}
+		body.game-fullscreen .scene-wrap { min-width: 0; min-height: 0; display: flex; padding: clamp(6px, 1.5vh, 12px); }
+		body.game-fullscreen .scene-frame { width: 100%; height: 100%; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: center; }
+		body.game-fullscreen canvas { width: auto; height: auto; max-width: 100%; max-height: 100%; aspect-ratio: 16 / 10; object-fit: contain; justify-self: center; align-self: center; }
+		body.game-fullscreen .side { min-width: 0; min-height: 0; overflow-y: auto; border-top: 0; border-left: 1px solid var(--line); padding: clamp(8px, 1.8vh, 14px); gap: clamp(5px, 1vh, 10px); }
+		body.game-fullscreen .dialogue { min-height: 0; }
+		body.game-fullscreen .mobile-controls { padding: clamp(8px, 2vmin, 16px); }
+		body.game-fullscreen .mobile-stick { width: clamp(64px, 16vmin, 104px); height: clamp(64px, 16vmin, 104px); flex-basis: clamp(64px, 16vmin, 104px); }
+		body.game-fullscreen .mobile-stick-knob { width: clamp(30px, 6vmin, 44px); height: clamp(30px, 6vmin, 44px); }
+		body.game-fullscreen .mobile-interact { width: clamp(54px, 11vmin, 70px); height: clamp(54px, 11vmin, 70px); font-size: clamp(1.4rem, 5vmin, 2rem); }
+		@media (orientation: portrait) {
+			body.game-fullscreen.mobile-device .app {
+				top: 0;
+				left: 100vw;
+				width: 100dvh;
+				height: 100vw;
+				transform: rotate(90deg);
+				transform-origin: top left;
+			}
+			body.game-fullscreen.mobile-device.mobile-landscape-left .app {
+				top: 100vh;
+				left: 0;
+				transform: rotate(-90deg);
+			}
+		}
+	</style>
+</head>
+<body>
+	<div class="app" id="gameApp">
+		<header>
+			<div class="brand">
+				<div class="brand-mark">✦</div>
+				<div><h1>Những ngày tháng học đường</h1><div class="subtitle">Một game tình huống về phòng chống bạo lực học đường</div></div>
+			</div>
+			<div class="score-box">ĐIỂM AN TOÀN<strong id="score">0 / 400</strong></div>
+		</header>
+
+		<main class="main">
+			<section class="scene-wrap">
+				<div class="scene-frame">
+					<canvas id="game" width="800" height="500" aria-label="Bản đồ game 2D"></canvas>
+					<div class="paper-overlay hidden" id="paperOverlay" role="dialog" aria-modal="true" aria-labelledby="paperTitle">
+						<article class="paper-slip">
+							<h3 id="paperTitle"></h3>
+							<p id="paperContent"></p>
+							<div class="paper-instruction">Nhấn E hoặc nút tương tác để cất mảnh giấy và tiếp tục.</div>
+						</article>
+					</div>
+					<div class="hint" id="controlHint">Di chuyển: WASD / phím mũi tên · Tương tác: E</div>
+					<div class="mobile-controls" id="mobileControls">
+						<button class="mobile-stick" id="mobileStick" type="button" aria-label="Cần điều khiển di chuyển 360 độ" aria-describedby="mobileStickHelp"><span class="mobile-stick-knob" id="mobileStickKnob"></span></button>
+						<span class="hidden" id="mobileStickHelp">Giữ và xoay cần điều khiển để di chuyển theo mọi hướng.</span>
+						<button class="mobile-interact" id="mobileInteract" type="button" aria-label="Tương tác" title="Tương tác">✋</button>
+					</div>
+				</div>
+			</section>
+
+			<aside class="side">
+				<div>
+					<div class="eyebrow" id="stepLabel">Level 1 / 10 · Tình huống 1 / 2</div>
+					<h2 id="title">Một vị khách đang cần giúp đỡ</h2>
+				</div>
+				<div class="progress"><span id="progress"></span></div>
+				<div class="dialogue"><div class="speaker" id="speaker">An · học sinh</div><div id="text">Hãy đi lại gần các nhân vật có dấu chấm than để bắt đầu.</div></div>
+				<div class="choices" id="choices"></div>
+				<div class="feedback" id="feedback"></div>
+				<div class="learning-note hidden" id="learningNote" role="note" aria-live="polite"><strong>Ghi chú học tập</strong><span>Bạn cần học hỏi thêm các hành vi ứng xử đúng đắn hơn đối với việc giúp đỡ những người xung quanh để phát triển bản thân, nhà trường và xã hội.</span></div>
+				<div class="summary hidden" id="summary"></div>
+				<button class="action hidden" id="continueBtn">Tiếp tục</button>
+				<button class="action hidden" id="nextBtn">Tiếp tục tình huống</button>
+				<button class="action secondary hidden" id="skipHomeBtn">Bỏ qua hướng dẫn</button>
+				<button class="action secondary" id="resetBtn">Chơi lại từ đầu</button>
+				<div class="toast" id="toast"></div>
+				<div class="controls" id="controlLegend"><span><kbd>WASD</kbd> di chuyển</span><span><kbd>E</kbd> nói chuyện</span><span>Đi đến NPC sáng màu</span></div>
+			</aside>
+		</main>
+		<div class="scene-transition" id="sceneTransition" aria-hidden="true"><span id="transitionLabel">Level tiếp theo</span><button class="action secondary skip-introduction hidden" id="skipIntroductionBtn" type="button">Bỏ qua giới thiệu</button><button class="action continue-introduction hidden" id="continueIntroductionBtn" type="button">Tiếp tục</button></div>
+		<div class="outro" id="outro" aria-hidden="true">
+			<div class="outro-content">
+				<div class="outro-kicker">HÀNH TRÌNH AN TOÀN</div>
+				<h2>Chúc mừng!</h2>
+				<p>Bạn đã hoàn thành tốt trách nhiệm của mình đối với các bạn học khác, nhà trường và xã hội. Những lựa chọn biết lắng nghe, tôn trọng và tìm kiếm sự giúp đỡ đã góp phần xây dựng môi trường học đường an toàn hơn.</p>
+				<button class="action" id="outroContinue">Xem tổng kết</button>
+			</div>
+		</div>
+		<div class="escape-fail hidden" id="escapeFail" role="alertdialog" aria-modal="true" aria-labelledby="escapeFailMessage">
+			<div class="escape-fail-content">
+				<h2 id="escapeFailMessage">Chúc bạn đưa ra cư xử khôn ngoan hơn để trốn thoát khỏi đám đông khi bị bắt nạt lần sau!</h2>
+				<button class="action" id="returnMenuBtn">Về menu chính</button>
+			</div>
+		</div>
+	</div>
+		<div class="start-menu" id="startMenu">
+			<div class="start-content">
+				<h2>Những ngày tháng học đường</h2>
+				<p>Đối phó bạo lực học đường</p>
+				<button class="action start-button" id="playBtn">Play</button>
+			</div>
+			<div class="menu-status" id="menuStatus" aria-live="polite"></div>
+			<button class="action secondary quit-button" id="quitBtn">Quit</button>
+		</div>
+		<div class="confirm-overlay hidden" id="confirmOverlay" aria-hidden="true">
+			<section class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="confirmMessage">
+				<h2 id="confirmMessage"></h2>
+				<div class="confirm-actions">
+					<button class="action confirm-button confirm-yes" id="confirmYes">Có</button>
+					<button class="action confirm-button confirm-no" id="confirmNo">Không</button>
+				</div>
+			</section>
+		</div>
+
+	<script>
+		const canvas = document.getElementById('game');
+		const ctx = canvas.getContext('2d');
+		const logicalCanvasWidth = canvas.width;
+		const logicalCanvasHeight = canvas.height;
+		function resizeCanvasForDisplay() {
+			const pixelRatio = Math.min(window.devicePixelRatio || 1, 3);
+			const pixelWidth = Math.round(logicalCanvasWidth * pixelRatio);
+			const pixelHeight = Math.round(logicalCanvasHeight * pixelRatio);
+			if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
+				canvas.width = pixelWidth;
+				canvas.height = pixelHeight;
+			}
+			ctx.setTransform(pixelWidth / logicalCanvasWidth, 0, 0, pixelHeight / logicalCanvasHeight, 0, 0);
+		}
+		resizeCanvasForDisplay();
+		window.addEventListener('resize', resizeCanvasForDisplay);
+		const ui = {
+			score: document.getElementById('score'), title: document.getElementById('title'), speaker: document.getElementById('speaker'),
+			text: document.getElementById('text'), choices: document.getElementById('choices'), feedback: document.getElementById('feedback'), learningNote: document.getElementById('learningNote'), summary: document.getElementById('summary'), transition: document.getElementById('sceneTransition'), transitionLabel: document.getElementById('transitionLabel'),
+			next: document.getElementById('nextBtn'), reset: document.getElementById('resetBtn'), toast: document.getElementById('toast'), continue: document.getElementById('continueBtn'), escapeFail: document.getElementById('escapeFail'), startMenu: document.getElementById('startMenu'), menuStatus: document.getElementById('menuStatus'), outro: document.getElementById('outro'), skipIntroduction: document.getElementById('skipIntroductionBtn'), continueIntroduction: document.getElementById('continueIntroductionBtn'),
+			step: document.getElementById('stepLabel'), progress: document.getElementById('progress'), confirmOverlay: document.getElementById('confirmOverlay'), confirmMessage: document.getElementById('confirmMessage'), confirmYes: document.getElementById('confirmYes'), confirmNo: document.getElementById('confirmNo'), mobileControls: document.getElementById('mobileControls'), mobileStick: document.getElementById('mobileStick'), mobileStickKnob: document.getElementById('mobileStickKnob'), mobileInteract: document.getElementById('mobileInteract'), controlHint: document.getElementById('controlHint'), controlLegend: document.getElementById('controlLegend'), skipHome: document.getElementById('skipHomeBtn'), paperOverlay: document.getElementById('paperOverlay'), paperTitle: document.getElementById('paperTitle'), paperContent: document.getElementById('paperContent')
+		};
+		function detectMobileDevice() {
+			const userAgent = navigator.userAgent || '';
+			const mobileUserAgent = navigator.userAgentData?.mobile === true || /Android|iPhone|iPad|iPod/i.test(userAgent);
+			const iPadDesktopMode = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+			const touchPrimary = window.matchMedia('(pointer: coarse) and (hover: none)').matches;
+			return mobileUserAgent || iPadDesktopMode || touchPrimary;
+		}
+		const isTouchDevice = detectMobileDevice();
+		function updateMobileOrientationFallback() {
+			if (!isTouchDevice) return;
+			const angle = screen.orientation ? screen.orientation.angle : (window.orientation || 0);
+			document.body.classList.toggle('mobile-landscape-left', Math.abs(angle) === 180);
+		}
+		document.body.classList.toggle('mobile-device', isTouchDevice);
+		updateMobileOrientationFallback();
+		window.addEventListener('orientationchange', updateMobileOrientationFallback);
+		window.addEventListener('resize', updateMobileOrientationFallback);
+		ui.mobileControls.classList.toggle('mobile-enabled', isTouchDevice);
+		if (isTouchDevice) {
+			ui.controlHint.textContent = 'Di chuyển: Joystick · Tương tác: ✋';
+			ui.controlLegend.innerHTML = '<span>Joystick 360° di chuyển</span><span>✋ tương tác</span><span>Đến gần NPC sáng màu</span>';
+		}
+		const keys = {};
+		const mobileInput = { x: 0, y: 0, active: false, pointerId: null, lastAngle: null };
+		const player = { x: 120, y: 355, speed: 185, facing: 1, moving: false };
+		const state = { score: 0, scene: 0, phase: 0, branch: 0, active: false, answered: false, transitioning: false, started: false, intro: true, introStartedAt: 0, opening: '', tutorialStep: '', tutorialDirections: new Set(), tutorialDirectionTimes: { up: 0, down: 0, left: 0, right: 0 }, tutorialRotation: 0, openingTimer: null, skippingIntroduction: false, motherChoice: null, epilogue: '', alleyStage: 0, policeArrivalProgress: 0, policeDialogueStarted: false, policeArrestProgress: 0, policeArrestStarted: false, route: '', routeStep: 0, routeActions: [], outcomes: [], displayedChoices: [], dialogueIndex: 0, waitingForSceneAdvance: false, confirmationAction: '', confirmationReturnFocus: null, lastCorrectPosition: -1, correctPositionStreak: 0, paperTimer: null, checkpointTimer: null, paperSamplesCollected: false, paperReadScene: -1, paperOpen: false, last: 0 };
+		state.storyLines = [];
+		state.storyIndex = 0;
+		const npcNames = [
+			['Minh', '#ec8e62'], ['Vy', '#7c9ee8'], ['Quân', '#d981b4'], ['Hà', '#8bbf73'], ['Lan', '#7bb59a'],
+			['Minh', '#ec8e62'], ['Vy', '#7c9ee8'], ['Quân', '#d981b4'], ['Hà', '#8bbf73'], ['Lan', '#7bb59a'],
+			['Minh', '#ec8e62'], ['Vy', '#7c9ee8'], ['Quân', '#d981b4'], ['Hà', '#8bbf73'],
+			['Lan', '#7bb59a'], ['Minh', '#ec8e62'], ['Vy', '#7c9ee8'], ['Quân', '#d981b4'], ['Hà', '#8bbf73'], ['Lan', '#7bb59a']
+		];
+		const safeNpcSpots = [[250, 315], [540, 230], [245, 235], [500, 350], [470, 235]];
+		const npcs = npcNames.map(([name, color], index) => {
+			const [x, y] = safeNpcSpots[index % safeNpcSpots.length];
+			return { x, y, name, color, label: 'HỌC SINH', scene: index };
+		});
+		const schoolGate = { x: 370, y: 315 };
+		const motherActor = { x: 590, y: 315, name: 'Mẹ', color: '#b77bd1', nameColor: '#000000' };
+		const homeDoor = { x: 70, y: 355 };
+		const introPeople = [
+			{ x: 95, y: 323, name: 'Học sinh', color: '#ec8e62', nameColor: '#ff786b', speed: 62 },
+			{ x: 235, y: 323, name: 'Học sinh', color: '#7c9ee8', nameColor: '#75d6ff', speed: 54 },
+			{ x: 500, y: 323, name: 'Phụ huynh', color: '#5b8c81', nameColor: '#ff9b6b', speed: 58 },
+			{ x: 700, y: 323, name: 'Học sinh', color: '#d981b4', nameColor: '#ff9bd4', speed: 50 },
+			{ x: 610, y: 323, name: 'Phụ huynh', color: '#8bbf73', nameColor: '#ff9b6b', speed: 66 }
+		];
+		const restroomEntry = { x: 660, y: 355 };
+		const restroomExit = { x: 110, y: 355 };
+		const classroomDoor = { x: 700, y: 355 };
+		const classroomPaper = { x: 520, y: 285 };
+		const classroomStudent = { x: 465, y: 315, name: 'Minh', color: '#ec8e62' };
+		const sevenLevelDisciplineActor = { x: 180, y: 305, name: '', color: '#ffffff' };
+		const alleyBullies = [{ x: 580, y: 305, name: 'Huy', color: '#8d5360' }, { x: 680, y: 315, name: 'Tú', color: '#68566f' }];
+		const alleyPolice = [{ x: 280, y: 305, name: 'Công an', color: '#526f91' }, { x: 370, y: 305, name: 'Công an', color: '#526f91' }];
+		const restroomGroup = [
+			{ x: 290, y: 315, name: 'Học sinh', color: '#ec8e62' }, { x: 380, y: 315, name: 'Học sinh', color: '#7c9ee8' },
+			{ x: 470, y: 315, name: 'Học sinh', color: '#d981b4' }, { x: 560, y: 315, name: 'Học sinh', color: '#8bbf73' }
+		];
+		const choice = (text, points, feedback) => [text, points, feedback];
+		const followUp = (text, choices) => ({ text, choices });
+		const scenes = [
+			{ day: 1, title: 'Ngày đầu tiên', speaker: 'Minh · học sinh mới', text: 'Ngày đầu tiên đến lớp, một nhóm bạn đặt biệt danh “Nhím” cho Minh. Minh cười gượng, còn các bạn khác cười lớn.', choices: [choice('Cười theo để làm quen.', 0, 'Bạn chưa biết Minh có thấy vui hay không, hãy quan sát phản ứng của Minh.'), choice('Im lặng và quan sát.', 0, 'Bạn nhận ra Minh đang lúng túng và cần được hỏi han.'), choice('Hỏi Minh có cần giúp không và nói rằng bạn ấy có vẻ không thoải mái.', 0, 'Bạn đã thể hiện sự đồng cảm và nhận ra đây có thể không còn là trò đùa.')], followUps: [followUp('Minh cúi mặt. Một bạn trong nhóm nói: “Có gì đâu mà nghiêm trọng, chỉ đùa thôi!”.', [choice('Bảo Minh tự giải quyết.', 0, 'Minh có thể cảm thấy bị bỏ rơi khi hành vi vẫn tiếp tục.'), choice('Cùng Minh tìm giáo viên hoặc người lớn đáng tin để được hỗ trợ.', 20, 'Bạn nhận diện đúng hành vi gây tổn thương và hỗ trợ Minh an toàn.'), choice('Quay video để đăng lên mạng.', 5, 'Không phát tán hình ảnh. Hãy giữ riêng tư và báo người lớn.')]), followUp('Minh vẫn lúng túng và không biết nói gì.', [choice('Bỏ đi để không bị liên lụy.', 0, 'Minh cần một người đồng hành, không phải bị bỏ lại.'), choice('Ở cạnh Minh và rủ bạn ấy nói chuyện với giáo viên.', 20, 'Bạn đã hỗ trợ bằng sự đồng cảm và kết nối đúng người.'), choice('Cười theo để nhóm không chú ý.', 5, 'Cười theo vẫn khiến hành vi bắt nạt được tiếp sức.')]), followUp('Minh cảm ơn bạn nhưng nhóm vẫn tiếp tục gọi biệt danh.', [choice('Bảo Minh phải mạnh mẽ hơn.', 0, 'Lời trách móc không giúp Minh an toàn hơn.'), choice('Nói rõ Minh có quyền không thích biệt danh và cùng báo giáo viên.', 20, 'Bạn tôn trọng ranh giới và tìm hỗ trợ phù hợp.'), choice('Thách nhóm kia trước mặt mọi người.', 5, 'Đối đầu công khai có thể khiến nguy cơ tăng lên.')])]},
+			{ day: 1, title: 'Biệt danh không mong muốn', speaker: 'Vy · bạn cùng lớp', text: 'Vy bị gọi bằng một biệt danh liên quan đến ngoại hình. Mỗi lần Vy phản đối, nhóm bạn lại cười và gọi to hơn.', choices: [choice('Gọi lại họ bằng biệt danh khác.', 0, 'Đáp trả bằng xúc phạm có thể làm tổn thương lan rộng.'), choice('Hỏi Vy muốn được hỗ trợ như thế nào.', 0, 'Bạn đang đặt cảm nhận và mong muốn của Vy lên trước.'), choice('Nói với nhóm rằng biệt danh này khiến Vy không thoải mái.', 0, 'Bạn đang đặt một ranh giới rõ ràng nhưng vẫn cần hỗ trợ người lớn.')], followUps: [followUp('Một bạn xé trang vở của Vy rồi nói: “Chỉ đùa thôi mà!”.', [choice('Xé lại vở của bạn đó.', 0, 'Trả đũa có thể biến tình huống thành xung đột.'), choice('Đưa Vy đến giáo viên, giữ lại phần vở bị xé và kể đúng sự việc.', 20, 'Bạn bảo vệ bằng chứng và giúp người lớn can thiệp.'), choice('Chụp ảnh rồi gửi vào nhóm lớp.', 5, 'Không nên làm Vy xấu hổ thêm bằng cách phát tán hình ảnh.')]), followUp('Vy nói mình không muốn mọi chuyện lớn hơn.', [choice('Ép Vy phải đối chất ngay.', 0, 'Người bị ảnh hưởng cần được tôn trọng lựa chọn và cảm giác an toàn.'), choice('Ở cạnh Vy, hỏi ý kiến và cùng tìm người lớn đáng tin.', 20, 'Bạn hỗ trợ mà không ép buộc Vy.'), choice('Khuyên Vy nghỉ học.', 5, 'Nghỉ học không giải quyết hành vi bắt nạt.')]), followUp('Nhóm bạn chuyển sang chọc Vy trên hành lang.', [choice('Làm ngơ vì đó không phải chuyện của mình.', 0, 'Im lặng có thể khiến hành vi tiếp tục.'), choice('Báo giáo viên và rủ thêm bạn đáng tin đi cùng Vy.', 20, 'Bạn can thiệp an toàn và không để Vy đối mặt một mình.'), choice('Tự dọa lại nhóm kia.', 5, 'Đe dọa không phải cách giải quyết an toàn.')])]},
+			{ day: 2, title: 'Bị cô lập khỏi nhóm', speaker: 'Quân · bạn cùng lớp', text: 'Quân bị các bạn không cho ngồi cùng, xóa khỏi nhóm làm bài và nói rằng không ai muốn chơi với bạn ấy.', choices: [choice('Nói Quân tự tìm nhóm khác.', 0, 'Quân cần được lắng nghe chứ không bị đẩy sang một bên.'), choice('Hỏi Quân cảm thấy thế nào và lắng nghe.', 0, 'Bạn đã bắt đầu bằng sự đồng cảm.'), choice('Rủ Quân cùng tham gia một hoạt động an toàn.', 0, 'Bạn đang tạo một kết nối tích cực thay vì để Quân bị cô lập.')], followUps: [followUp('Nhóm cũ đẩy đồ của Quân xuống đất khi bạn ấy đến gần.', [choice('Nhặt đồ rồi bỏ đi.', 0, 'Tình huống cần được báo để ngăn hành vi tiếp diễn.'), choice('Đưa Quân đến chỗ an toàn và báo giáo viên.', 20, 'Bạn ưu tiên an toàn và tìm đúng người xử lý.'), choice('Đẩy lại đồ của nhóm kia.', 5, 'Không nên biến sự việc thành xô xát.')]), followUp('Quân nói: “Mình không muốn ai biết vì sợ bị trả đũa”.', [choice('Hứa giữ bí mật tuyệt đối.', 0, 'Khi có nguy cơ, người lớn cần biết để bảo vệ Quân.'), choice('Giải thích rằng bạn sẽ cùng Quân chọn một người lớn đáng tin.', 20, 'Bạn tôn trọng nỗi sợ và vẫn tạo kế hoạch hỗ trợ.'), choice('Kể ngay cho cả lớp.', 5, 'Không nên làm Quân mất quyền riêng tư.')]), followUp('Một bạn rủ Quân tham gia nhóm mới nhưng yêu cầu phải nói xấu bạn khác.', [choice('Bảo Quân đồng ý để có bạn.', 0, 'Không nên đánh đổi sự an toàn bằng việc làm tổn thương người khác.'), choice('Từ chối việc nói xấu và tìm nhóm tích cực hơn.', 20, 'Bạn giữ nguyên tắc và tìm môi trường lành mạnh.'), choice('Ghi âm cuộc nói chuyện rồi đăng lên mạng.', 5, 'Hãy báo người lớn thay vì phát tán ghi âm.')])]},
+			{ day: 2, title: 'Đồ dùng bị lấy và làm hỏng', speaker: 'Hà · bạn cùng lớp', text: 'Hà phát hiện hộp bút bị giấu. Sau đó, một quyển vở bị xé và đồ dùng bị ném xuống gầm bàn.', choices: [choice('Tự lục cặp của tất cả mọi người.', 0, 'Tìm kiếm thiếu kiểm soát có thể gây thêm xung đột.'), choice('Hỏi Hà chuyện gì đã xảy ra và tìm nơi an toàn.', 0, 'Bạn đang tập trung vào sự an toàn và thông tin chính xác.'), choice('Cáo buộc ngay người ngồi gần nhất.', 0, 'Cần kiểm chứng trước khi kết luận.')], followUps: [followUp('Một nhóm bạn cười và rủ bạn giấu đồ của người khác để “trả đũa”.', [choice('Làm theo để được tham gia nhóm.', 0, 'Bạn sẽ tiếp tay cho hành vi gây hại.'), choice('Từ chối, trả đồ về đúng chỗ và báo giáo viên.', 20, 'Bạn từ chối áp lực và khôi phục an toàn.'), choice('Giấu đồ rồi quay video.', 5, 'Hành vi vẫn sai dù bạn không trực tiếp làm hỏng đồ.')]), followUp('Hà muốn tự đối chất với nhóm kia sau giờ học.', [choice('Đi theo để cổ vũ đối đầu.', 0, 'Đối đầu ngoài giám sát có thể nguy hiểm.'), choice('Khuyên Hà không đi một mình và cùng báo người lớn.', 20, 'Bạn xây dựng một kế hoạch an toàn thiết thực.'), choice('Bảo Hà bỏ qua tất cả.', 5, 'Bỏ qua không ngăn hành vi lặp lại.')]), followUp('Giáo viên hỏi bạn có nhìn thấy gì không.', [choice('Nói thêm chi tiết mình không chắc.', 0, 'Thông tin sai có thể làm người khác bị oan.'), choice('Kể đúng điều đã thấy và chỉ người lớn đến bằng chứng.', 20, 'Bạn trung thực và giúp việc xử lý công bằng.'), choice('Im lặng vì sợ bị ghét.', 5, 'Có thể chia sẻ riêng với người lớn để an toàn hơn.')])]},
+			{ day: 3, title: 'Bị đe dọa sau giờ học', speaker: 'Lan · bạn cùng lớp', text: 'Lan nhận tin nhắn: “Tan học đứng lại, nếu kể với ai thì biết tay”. Lan rất lo và không muốn ra cổng một mình.', choices: [choice('Bảo Lan cứ đi ra để chứng minh mình không sợ.', 0, 'Không nên đặt Lan vào nguy hiểm.'), choice('Hỏi Lan đang ở đâu và tìm người lớn ngay.', 0, 'Bạn ưu tiên bảo vệ Lan trước khi xử lý nguyên nhân.'), choice('Nhắn tin thách thức người gửi.', 0, 'Thách thức có thể làm nguy cơ tăng lên.')], followUps: [followUp('Người gửi rủ bạn gặp riêng và hứa cho tiền nếu xóa tin nhắn.', [choice('Nhận tiền và xóa tin.', 0, 'Xóa bằng chứng khiến việc bảo vệ Lan khó hơn.'), choice('Không gặp riêng, lưu tin nhắn và báo người lớn.', 20, 'Bạn giữ bằng chứng và tránh một cuộc gặp nguy hiểm.'), choice('Chuyển tin cho nhiều bạn để hỏi ý kiến.', 5, 'Hãy giữ thông tin riêng tư và báo người có trách nhiệm.')]), followUp('Lan muốn gọi cho anh chị lớn để “dằn mặt” nhóm kia.', [choice('Đồng ý để họ đi xử lý.', 0, 'Có thể dẫn đến xô xát và hậu quả pháp lý.'), choice('Cùng Lan gọi giáo viên, phụ huynh hoặc bảo vệ trường.', 20, 'Bạn chọn sự hỗ trợ chính thức và an toàn.'), choice('Tự đi theo để quay lại cuộc gặp.', 5, 'Không nên tự đặt mình vào nguy hiểm.')]), followUp('Tan học đã đến, nhóm kia đứng gần cổng.', [choice('Đi ngang qua một mình.', 0, 'Lan cần có người lớn hoặc bạn đáng tin đi cùng.'), choice('Ở lại trong trường và gọi người lớn hỗ trợ đón an toàn.', 20, 'Bạn thực hiện đúng kế hoạch an toàn cá nhân.'), choice('Ném đồ để nhóm kia bỏ chạy.', 5, 'Hành động này có thể làm tình hình xấu hơn.')])]},
+			{ day: 3, title: 'Tin nhắn của nhóm lớp', speaker: 'Minh · nhân chứng', text: 'Trong nhóm chat, nhiều bạn chế giễu một bạn vắng mặt và liên tục gửi ảnh chế xúc phạm.', choices: [choice('Thả biểu tượng cười để không bị chú ý.', 0, 'Tương tác đó vẫn tiếp sức cho bắt nạt.'), choice('Không tiếp tay và lưu lại bằng chứng.', 0, 'Bạn đang bảo vệ nạn nhân và thông tin cần thiết.'), choice('Chuyển ảnh cho bạn thân để hỏi ý kiến.', 0, 'Ảnh xúc phạm không nên được phát tán thêm.')], followUps: [followUp('Một bạn rủ bạn dùng tài khoản ẩn danh để chọc lại nạn nhân.', [choice('Tham gia để được nhóm chấp nhận.', 0, 'Bạn sẽ trực tiếp góp phần vào bắt nạt trên mạng.'), choice('Từ chối và báo giáo viên hoặc phụ huynh.', 20, 'Bạn không tiếp tay và kết nối hỗ trợ.'), choice('Tạo tài khoản khác để trả đũa.', 5, 'Trả đũa trên mạng vẫn gây hại và khó kiểm soát.')]), followUp('Nạn nhân nhắn riêng rằng bạn ấy sợ phải đến trường.', [choice('Bảo bạn ấy tắt điện thoại là xong.', 0, 'Cần giải quyết hành vi gây hại chứ không chỉ tránh nhìn thấy.'), choice('Lắng nghe, giữ riêng tư và cùng tìm người lớn hỗ trợ.', 20, 'Bạn phản hồi có trách nhiệm và đồng cảm.'), choice('Đăng lời xin lỗi thay nạn nhân.', 5, 'Nên để nạn nhân và người lớn quyết định cách xử lý.')]), followUp('Nhóm chat bắt đầu đe dọa sẽ đăng ảnh riêng tư.', [choice('Bảo nạn nhân tự chịu trách nhiệm.', 0, 'Đe dọa phát tán ảnh cần được báo ngay.'), choice('Lưu bằng chứng, không chuyển tiếp và báo người lớn.', 20, 'Bạn bảo vệ quyền riêng tư và ngăn nội dung lan rộng.'), choice('Chụp lại rồi đăng để mọi người biết.', 5, 'Đăng lại vẫn làm nạn nhân bị tổn thương.')])]},
+			{ day: 4, title: 'Ảnh và video bị chia sẻ', speaker: 'Vy · bạn cùng lớp', text: 'Vy phát hiện một video quay lúc mình bị trêu đã được gửi cho nhiều người mà chưa được đồng ý.', choices: [choice('Gửi tiếp cho một người bạn tin tưởng.', 0, 'Nội dung riêng tư không nên được lan truyền thêm.'), choice('Hỏi Vy muốn được hỗ trợ và ngừng chia sẻ video.', 0, 'Bạn tôn trọng quyền quyết định của Vy.'), choice('Bình luận để mọi người biết chuyện.', 0, 'Bình luận công khai có thể làm video lan rộng hơn.')], followUps: [followUp('Một bạn nói sẽ xóa video nếu bạn làm giúp một việc sai nội quy.', [choice('Làm theo để video biến mất.', 0, 'Không nên bị ép làm việc sai để đổi lấy an toàn.'), choice('Từ chối thỏa thuận và báo giáo viên về việc phát tán.', 20, 'Bạn không để bị ép buộc và đưa việc cho người có trách nhiệm.'), choice('Dọa sẽ đăng bí mật của bạn đó.', 5, 'Đe dọa qua lại không giải quyết được vấn đề.')]), followUp('Vy muốn xóa hết tin nhắn vì xấu hổ.', [choice('Xóa ngay tất cả.', 0, 'Mất bằng chứng có thể khiến việc can thiệp khó hơn.'), choice('Giúp Vy lưu bằng chứng an toàn rồi báo người lớn.', 20, 'Bạn bảo vệ Vy và quyền riêng tư của bạn ấy.'), choice('Gửi bằng chứng cho cả lớp.', 5, 'Chỉ chia sẻ với người có trách nhiệm.')]), followUp('Người đăng video tiếp tục nhắn tin xúc phạm.', [choice('Tranh cãi thật lâu với họ.', 0, 'Tranh cãi có thể làm nội dung tiếp tục leo thang.'), choice('Chặn, lưu bằng chứng và nhờ người lớn hỗ trợ.', 20, 'Bạn dùng công cụ an toàn và hỗ trợ chính thức.'), choice('Tạo tài khoản giả để trả lời.', 5, 'Không nên kéo dài vòng bắt nạt.')])]},
+			{ day: 4, title: 'Rủ rê làm việc sai', speaker: 'Quân · bạn cùng lớp', text: 'Một nhóm lớn rủ Quân lấy đồ trong phòng kho rồi nói đó là “bài kiểm tra lòng trung thành”.', choices: [choice('Đi theo để không bị coi là nhát.', 0, 'Áp lực nhóm không khiến việc sai trở thành đúng.'), choice('Hỏi rõ việc gì và khuyên Quân không đi một mình.', 0, 'Bạn đang nhận diện nguy cơ trước khi hành động.'), choice('Quay video nhóm rồi đăng lên mạng.', 0, 'Đăng video có thể làm mọi người gặp thêm rắc rối.')], followUps: [followUp('Nhóm kia nói nếu từ chối, Quân sẽ bị đánh và bị đổ lỗi.', [choice('Bảo Quân làm theo để tránh rắc rối.', 0, 'Điều đó đặt Quân vào nguy cơ và tiếp tay cho hành vi sai.'), choice('Đưa Quân đến giáo viên, bảo vệ trường hoặc phụ huynh.', 20, 'Đe dọa cần được báo ngay để có bảo vệ.'), choice('Rủ thêm bạn đến đánh lại.', 5, 'Không nên giải quyết đe dọa bằng bạo lực.')]), followUp('Một bạn đưa cho bạn chiếc chìa khóa và bảo giữ hộ.', [choice('Cầm giúp để được tin tưởng.', 0, 'Bạn có thể bị kéo vào hành vi vi phạm.'), choice('Không nhận, trả lại và báo người lớn.', 20, 'Bạn đặt ranh giới và ngăn sự việc tiến xa.'), choice('Giấu chìa khóa ở nơi khác.', 5, 'Che giấu vẫn khiến nguy cơ tiếp tục.')]), followUp('Giáo viên hỏi nhóm đã xảy ra chuyện gì.', [choice('Im lặng để bảo vệ nhóm.', 0, 'Im lặng có thể khiến hành vi tiếp diễn.'), choice('Nói đúng sự việc và cho biết mình không tham gia.', 20, 'Bạn trung thực và chịu trách nhiệm.'), choice('Đổ hết lỗi cho Quân.', 5, 'Không nên đẩy trách nhiệm sang người đang bị ép buộc.')])]},
+			{ day: 5, title: 'Đứng ngoài cuộc hay lên tiếng', speaker: 'Hà · bạn cùng lớp', text: 'Bạn nhìn thấy một học sinh bị chặn ở hành lang, giật cặp và bị ép xin lỗi dù không làm gì sai.', choices: [choice('Đi ngang qua vì sợ bị chú ý.', 0, 'Bỏ qua có thể khiến bạn ấy tiếp tục gặp nguy hiểm.'), choice('Giữ khoảng cách và tìm người lớn.', 0, 'Bạn đang chọn cách can thiệp an toàn.'), choice('Xông vào đánh nhóm kia.', 0, 'Không nên tự đối đầu khi có nguy cơ bạo lực.')], followUps: [followUp('Nhóm kia quay sang bảo bạn quay video để làm trò vui.', [choice('Quay và cười theo.', 0, 'Bạn sẽ tiếp tay cho việc làm nhục người khác.'), choice('Từ chối, gọi giáo viên và ở gần nạn nhân nếu an toàn.', 20, 'Bạn bảo vệ nạn nhân mà không làm tình hình nguy hiểm hơn.'), choice('Quay để làm bằng chứng rồi đăng lên mạng.', 5, 'Bằng chứng chỉ nên được gửi cho người có trách nhiệm.')]), followUp('Nạn nhân nói mình không muốn bị hỏi chuyện trước đám đông.', [choice('Ép bạn ấy kể ngay.', 0, 'Cần tôn trọng cảm giác an toàn và quyền riêng tư.'), choice('Đưa bạn ấy đến nơi yên tĩnh và hỏi muốn gọi ai hỗ trợ.', 20, 'Bạn hỗ trợ có sự đồng ý và tôn trọng.'), choice('Kể lại cho nhiều bạn để mọi người thương.', 5, 'Không nên chia sẻ chuyện riêng tư.')]), followUp('Giáo viên đến nhưng nhóm kia phủ nhận tất cả.', [choice('La mắng nhóm kia để họ nhận lỗi.', 0, 'Căng thẳng có thể làm việc xác minh khó hơn.'), choice('Kể đúng điều đã thấy và để giáo viên xác minh.', 20, 'Bạn cung cấp thông tin đáng tin và để người có trách nhiệm xử lý.'), choice('Đăng bài tố cáo ngay.', 5, 'Tố cáo công khai có thể gây oan và làm hại thêm.')])]},
+			{ day: 5, title: 'Tin đồn lan truyền', speaker: 'Lan · bạn cùng lớp', text: 'Một tin đồn nói Lan lấy tiền của lớp đang lan rất nhanh dù chưa ai kiểm chứng.', choices: [choice('Chuyển tiếp để hỏi mọi người.', 0, 'Chuyển tiếp vẫn làm tin đồn lan rộng.'), choice('Dừng lại và hỏi giáo viên về thông tin chính thức.', 0, 'Bạn đang kiểm chứng trước khi kết luận.'), choice('Đăng lời mắng Lan để bảo vệ lớp.', 0, 'Kết luận vội có thể gây tổn thương và oan sai.')], followUps: [followUp('Một bạn rủ bạn giả danh Lan để nhận lỗi cho “xong chuyện”.', [choice('Làm theo để tin đồn dừng lại.', 0, 'Giả danh có thể gây hậu quả nghiêm trọng hơn.'), choice('Từ chối và báo giáo viên rằng tin đồn chưa được kiểm chứng.', 20, 'Bạn bảo vệ sự thật và quyền được tôn trọng của Lan.'), choice('Đăng ảnh Lan kèm tin đồn.', 5, 'Không được phát tán nội dung chưa xác thực.')]), followUp('Lan khóc và muốn bỏ học vì bị mọi người nhìn khác đi.', [choice('Bảo Lan kệ mọi người.', 0, 'Lan cần được lắng nghe và bảo vệ.'), choice('Ở cạnh Lan và cùng gặp giáo viên hoặc phụ huynh.', 20, 'Bạn giúp Lan nhận hỗ trợ thay vì chịu một mình.'), choice('Hứa sẽ trả đũa người tung tin.', 5, 'Trả đũa có thể làm tình hình tệ hơn.')]), followUp('Giáo viên xác nhận số tiền vẫn được giữ trong tủ lớp.', [choice('Không cần xin lỗi vì chỉ là tin đồn.', 0, 'Tin đồn vẫn đã gây tổn thương.'), choice('Xin lỗi Lan và cùng giáo viên nhắc lớp kiểm chứng thông tin.', 20, 'Bạn chịu trách nhiệm và giúp lớp học an toàn hơn.'), choice('Xóa bài nhưng không nói gì.', 5, 'Xóa là cần thiết nhưng một lời xin lỗi cũng quan trọng.')])]},
+			{ day: 6, title: 'Kế hoạch an toàn', speaker: 'Minh · học sinh mới', text: 'Minh sắp phải đi qua khu vực nhóm bắt nạt thường đứng. Minh hỏi bạn nên làm gì để không gặp nguy hiểm.', choices: [choice('Bảo Minh cứ đi nhanh qua.', 0, 'Một kế hoạch an toàn cần nhiều hơn sự may mắn.'), choice('Cùng Minh xác định nơi an toàn và người có thể gọi.', 0, 'Bạn đang giúp Minh có kế hoạch cụ thể.'), choice('Rủ nhóm bạn đi đối chất.', 0, 'Đối chất có thể làm nguy cơ tăng lên.')], followUps: [followUp('Một người lạ trên mạng rủ Minh gặp riêng để “giúp xử lý”.', [choice('Bảo Minh đi gặp vì người đó có vẻ tốt.', 0, 'Không nên gặp người lạ một mình.'), choice('Không gặp, lưu tin nhắn và báo người lớn.', 20, 'Bạn nhận diện rủi ro và bảo vệ Minh.'), choice('Hẹn người đó ở chỗ vắng để hỏi rõ.', 5, 'Vẫn là một cuộc gặp không an toàn.')]), followUp('Nhóm bắt nạt nói sẽ bỏ qua nếu Minh làm một việc vi phạm nội quy.', [choice('Khuyên Minh làm để được yên.', 0, 'Không nên trao đổi an toàn bằng một hành vi sai.'), choice('Từ chối và để giáo viên, phụ huynh hỗ trợ.', 20, 'Bạn giúp Minh giữ ranh giới và tìm hỗ trợ đúng.'), choice('Giấu việc đó để không bị liên lụy.', 5, 'Che giấu có thể khiến Minh tiếp tục bị ép.')]), followUp('Minh muốn tự mình nói “không” với nhóm kia.', [choice('Để Minh tự đi gặp.', 0, 'Minh không nên đối mặt một mình.'), choice('Tôn trọng Minh nhưng cùng báo người lớn và chọn nơi công khai.', 20, 'Bạn khuyến khích sự chủ động trong một kế hoạch an toàn.'), choice('Bảo Minh phải im lặng hoàn toàn.', 5, 'Minh cần được lên tiếng trong môi trường được bảo vệ.')])]},
+			{ day: 6, title: 'Bảo vệ quyền riêng tư', speaker: 'Vy · bạn cùng lớp', text: 'Vy phát hiện thông tin cá nhân của mình bị đăng cùng lời nhắn chế giễu.', choices: [choice('Tìm và đăng thông tin của người kia.', 0, 'Trả đũa xâm phạm quyền riêng tư không phải giải pháp.'), choice('Chụp lại bằng chứng và nhờ người lớn hỗ trợ báo cáo.', 0, 'Bạn đang bảo vệ quyền riêng tư bằng cách an toàn.'), choice('Bảo Vy tự đóng mọi tài khoản.', 0, 'Cần xử lý người gây hại chứ không đổ trách nhiệm cho Vy.')], followUps: [followUp('Một tài khoản lạ yêu cầu Vy gửi ảnh riêng tư để đổi lấy việc xóa bài.', [choice('Gửi ảnh để được yên.', 0, 'Đó là dấu hiệu ép buộc và có thể dẫn đến tổn hại tiếp.'), choice('Không gửi, chặn tài khoản và báo người lớn.', 20, 'Bạn bảo vệ Vy khỏi bị thao túng thêm.'), choice('Dùng ảnh của bạn khác để trao đổi.', 5, 'Không được kéo người khác vào rủi ro.')]), followUp('Vy sợ người lớn sẽ trách mình.', [choice('Bảo Vy không cần nói với ai.', 0, 'Im lặng làm việc bảo vệ khó hơn.'), choice('Nói rõ Vy không có lỗi và cùng tìm người lớn biết lắng nghe.', 20, 'Bạn tạo cảm giác an toàn để Vy tìm hỗ trợ.'), choice('Kể câu chuyện của Vy cho bạn khác.', 5, 'Hãy tôn trọng quyền riêng tư của Vy.')]), followUp('Người lớn đề nghị cùng Vy báo cáo nội dung vi phạm.', [choice('Từ chối vì ngại.', 0, 'Báo cáo giúp giảm khả năng nội dung tiếp tục lan truyền.'), choice('Đồng ý và theo dõi việc gỡ nội dung.', 20, 'Bạn tham gia xử lý đúng cách và bảo vệ mình.'), choice('Tự nhắn tin chửi tài khoản kia.', 5, 'Không nên làm tình hình leo thang.')])]},
+			{ day: 7, title: 'Ngày quyết định', speaker: 'Quân · bạn cùng lớp', text: 'Nhóm từng gây chuyện rủ Quân tham gia một việc có thể vi phạm pháp luật và nói rằng nếu từ chối thì Quân sẽ bị cô lập.', choices: [choice('Đi theo để giữ vị trí trong nhóm.', 0, 'Áp lực nhóm không phải lý do để làm việc nguy hiểm.'), choice('Hỏi Quân muốn an toàn như thế nào và tìm người lớn.', 0, 'Bạn giúp Quân có lựa chọn được bảo vệ.'), choice('Tự đến cảnh cáo nhóm kia.', 0, 'Đối đầu một mình có thể gây nguy hiểm.')], followUps: [followUp('Nhóm kia đưa ra lời đe dọa và bắt Quân giữ một món đồ đáng ngờ.', [choice('Giữ hộ để chứng minh lòng trung thành.', 0, 'Bạn có thể bị kéo vào hành vi vi phạm.'), choice('Không nhận, rời khỏi nơi đó và báo ngay người lớn.', 20, 'Bạn giúp Quân thoát khỏi nguy cơ và bảo toàn bằng chứng.'), choice('Ném món đồ đi rồi bỏ chạy.', 5, 'Không nên tự xử lý vật đáng ngờ.')]), followUp('Quân muốn giấu chuyện để không bị trả đũa.', [choice('Đồng ý giữ kín hoàn toàn.', 0, 'Quân cần sự bảo vệ chính thức.'), choice('Giải thích rằng bạn sẽ chỉ nói với người có trách nhiệm.', 20, 'Bạn tôn trọng Quân nhưng không bỏ qua nguy cơ.'), choice('Kể cho cả lớp để nhóm kia bị tẩy chay.', 5, 'Không nên tạo thêm một vòng cô lập.')]), followUp('Giáo viên và phụ huynh đã biết sự việc, nhóm kia được mời làm việc.', [choice('Bảo Quân tự chịu hậu quả vì đã tham gia.', 0, 'Quân cần được hỗ trợ, nhất là khi bị ép buộc.'), choice('Khuyến khích Quân nói thật và tham gia kế hoạch bảo vệ.', 20, 'Bạn giúp sự việc được xử lý công bằng và an toàn.'), choice('Đăng tên nhóm kia lên mạng.', 5, 'Xử lý chính thức tốt hơn là công khai làm nhục.')])]},
+			{ day: 7, title: 'Khép lại vòng bắt nạt', speaker: 'Hà · bạn cùng lớp', text: 'Sau nhiều ngày, Hà muốn quay lại sinh hoạt bình thường. Một vài bạn vẫn tỏ vẻ hối lỗi, còn một số bạn khác chưa hiểu việc mình làm gây hại.', choices: [choice('Bảo Hà quên hết để mọi chuyện kết thúc.', 0, 'Cảm xúc và sự an toàn của Hà cần được quan tâm.'), choice('Hỏi Hà điều gì khiến bạn ấy thấy an toàn và cùng lập kế hoạch tiếp tục.', 0, 'Bạn đặt sự phục hồi và lựa chọn của Hà ở trung tâm.'), choice('Bắt nhóm kia xin lỗi trước toàn trường.', 0, 'Xin lỗi cần phù hợp, không biến thành một màn làm nhục khác.')], followUps: [followUp('Một bạn từng bắt nạt Hà xin lỗi nhưng muốn Hà im lặng về mọi chuyện.', [choice('Bảo Hà đồng ý để giữ hòa khí.', 0, 'Không nên dùng lời xin lỗi để ép người bị hại im lặng.'), choice('Để Hà tự quyết định và tiếp tục có người lớn hỗ trợ.', 20, 'Bạn tôn trọng quyền lựa chọn và sự an toàn của Hà.'), choice('Đăng lời xin lỗi lên mạng.', 5, 'Không nên biến việc phục hồi thành nội dung công khai.')]), followUp('Hà hỏi bạn có nên cho nhóm kia cơ hội sửa sai không.', [choice('Bảo Hà phải tha thứ ngay.', 0, 'Tha thứ không thể bị ép buộc và không thay thế trách nhiệm.'), choice('Nói rằng có thể sửa sai khi họ chịu trách nhiệm và tôn trọng ranh giới.', 20, 'Bạn hiểu phục hồi cần đi cùng trách nhiệm và an toàn.'), choice('Khuyên Hà trả đũa một lần.', 5, 'Trả đũa không giúp xây dựng môi trường an toàn.')]), followUp('Lớp thống nhất quy tắc không xúc phạm, không phát tán ảnh và báo người lớn khi có nguy cơ.', [choice('Cho rằng những quy tắc đó không cần thiết.', 0, 'Quy tắc rõ ràng giúp mọi người biết cách bảo vệ nhau.'), choice('Đồng ý tham gia và nhắc bạn bè thực hiện.', 20, 'Bạn biến trải nghiệm thành hành động tích cực cho cả lớp.'), choice('Chỉ đồng ý nếu không ai biết mình từng liên quan.', 5, 'Điều quan trọng là thay đổi hành vi và giữ an toàn, không phải che giấu.')]) ]}
+		];
+		const levels = [
+			['Học sinh mới', 'Nhận diện hành vi bắt nạt'], ['Biệt danh không mong muốn', 'Ứng phó với bắt nạt bằng lời nói'],
+			['Bị cô lập khỏi nhóm', 'Tìm kiếm sự hỗ trợ'], ['Đồ dùng bị lấy hoặc giấu', 'Giải quyết tình huống không an toàn'],
+			['Bị đe dọa sau giờ học', 'An toàn cá nhân'], ['Nhóm chat của lớp', 'Bắt nạt trên mạng'],
+			['Ảnh và video bị chia sẻ', 'Quyền riêng tư và cyberbullying'], ['Chứng kiến bạn bị bắt nạt', 'Vai trò người chứng kiến'],
+			['Tin đồn lan truyền', 'Kiểm chứng thông tin và không tiếp tay'], ['Tình huống tổng hợp', 'Vận dụng nhiều kỹ năng']
+		];
+		levels[3] = ['Ứng xử trên môi trường số', 'Quyền riêng tư và tìm kiếm hỗ trợ'];
+		const photoSharingScene = scenes.find(scene => scene.title === 'Ảnh và video bị chia sẻ');
+		Object.assign(photoSharingScene, {
+			speaker: 'Vy · bạn cùng lớp',
+			text: 'Ảnh của Vy bị chia sẻ trong nhóm lớp.',
+			useRawChoices: true,
+			dialogue: [
+				['Vy', 'Có người đã chia sẻ ảnh của mình trong nhóm lớp. Mình rất xấu hổ và muốn xóa hết tin nhắn đi…'],
+				['An', 'Vy, mình có thể giúp gì cho bạn?'],
+				['Vy', 'Mình không chắc ai đã chia sẻ. Mình chỉ muốn mọi người xóa ảnh đi.'],
+				['An', 'Mình nghĩ chúng ta nên lưu lại bằng chứng, không chia sẻ ảnh thêm và nhờ người lớn hỗ trợ.']
+			],
+			choices: [
+				choice('Tạo một tài khoản giả để nhắn tin và trả đũa người đã chia sẻ.', -10, 'Trả đũa bằng tài khoản giả có thể làm tình huống trở nên nghiêm trọng hơn.'),
+				choice('Khuyên Vy lưu ảnh chụp màn hình, không tiếp tục lan truyền và báo người lớn đáng tin cậy.', 20, 'Lưu lại bằng chứng giúp người lớn có cơ sở hỗ trợ Vy. Không tiếp tục chia sẻ hình ảnh cũng giúp hạn chế sự việc lan rộng.'),
+				choice('Tranh cãi với người đã chia sẻ ảnh và yêu cầu họ xóa ngay.', 5, 'Việc trực tiếp tranh cãi có thể khiến xung đột tiếp tục. Trong tình huống này, nên lưu bằng chứng và tìm người lớn hỗ trợ.')
+			],
+			responses: [
+				{ speaker: 'Vy', reaction: 'Mình vẫn thấy lo. Trả đũa có thể khiến mọi chuyện lan rộng hơn.' },
+				{ speaker: 'Vy', reaction: 'Cảm ơn bạn. Mình sẽ lưu lại bằng chứng và nói chuyện với cô giáo.' },
+				{ speaker: 'Vy', reaction: 'Mình không muốn cãi nhau với bạn ấy. Mình muốn nhờ cô giáo giúp.' }
+			]
+		});
+		const keyScene = scenes.find(scene => scene.title === 'Rủ rê làm việc sai');
+		Object.assign(keyScene, {
+			title: 'Chiếc chìa khóa',
+			speaker: 'Quân · bạn cùng lớp',
+			text: 'Quân đưa cho bạn một chiếc chìa khóa và nhờ bạn giữ kín.',
+			useRawChoices: true,
+			dialogue: [
+				['Quân', 'Bạn giữ giúp mình chiếc chìa khóa này nhé. Đừng nói với ai.'],
+				['An', 'Nhưng mình không biết chiếc chìa khóa này dùng để làm gì…'],
+				['Quân', 'Mình cũng không rõ. Có người đưa nó cho mình và bảo cứ giữ hộ.'],
+				['An', 'Mình không nên tự giữ một món đồ không rõ nguồn gốc. Hãy cùng tìm người lớn đáng tin để hỏi nhé.']
+			],
+			choices: [
+				choice('Rủ thêm bạn đến gặp người đang giữ chìa khóa để đòi lại.', -10, 'Tự tìm gặp và đòi chìa khóa có thể khiến mọi người đối mặt với nguy hiểm.'),
+				choice('Giữ chìa khóa và làm theo yêu cầu của Quân để tránh gặp rắc rối.', 0, 'Giữ kín một món đồ không rõ nguồn gốc có thể khiến Quân và bạn gặp thêm rắc rối.'),
+				choice('Khuyên Quân báo với giáo viên, phụ huynh hoặc người lớn đáng tin cậy.', 20, 'Khi sự việc có dấu hiệu liên quan đến đe dọa hoặc hành vi nguy hiểm, tìm kiếm sự hỗ trợ của người lớn là cách xử lý phù hợp.')
+			],
+			responses: [
+				{ speaker: 'Quân', reaction: 'Mình không muốn kéo thêm bạn vào việc này. Chúng ta nên nhờ người lớn.' },
+				{ speaker: 'Quân', reaction: 'Mình vẫn lo không biết chiếc chìa khóa này liên quan đến chuyện gì.' },
+				{ speaker: 'Quân', reaction: 'Ừ, mình sẽ nói với cô giáo và gọi cho mẹ để cùng tìm hiểu.' }
+			]
+		});
+		const tenLevelSceneCount = levels.length * 2;
+		const specialScene = scenes.find(scene => scene.title === 'Bị đe dọa sau giờ học');
+		specialScene.text = 'Tan học, Lan thấy một nhóm học sinh lạ chờ ở ngoài cổng. Họ rủ hai bạn đi đua xe trái phép trên đường và nói sẽ gặp nhau trong con hẻm gần đó.';
+		specialScene.choices = [
+			choice('Đi cùng nhóm để tham gia cuộc đua xe trái phép.', 0, 'Đua xe trái phép có thể khiến bạn và người khác bị thương hoặc gặp hậu quả pháp lý.'),
+			choice('Từ chối, ở nơi an toàn và gọi Lan cùng người lớn đáng tin.', 0, 'Bạn đã chọn rời khỏi nguy cơ và tìm sự hỗ trợ an toàn.'),
+			choice('Đi theo họ vào con hẻm để giữ bí mật.', 0, 'Đi vào nơi vắng cùng người đang gây áp lực khiến bạn khó tìm trợ giúp.')
+		];
+		specialScene.followUps[1] = followUp('Lan đồng ý ở lại nơi đông người. Bạn có thể gọi giáo viên, phụ huynh hoặc bảo vệ trường để cùng đưa Lan về an toàn.', [choice('Gọi người lớn đáng tin và chờ cùng Lan ở nơi an toàn.', 20, 'Bạn đã từ chối lời rủ rê, bảo vệ Lan và kết nối đúng người hỗ trợ.'), choice('Để Lan tự về rồi bỏ đi.', 0, 'Lan vẫn có thể gặp nguy hiểm khi phải tự xoay xở.'), choice('Nhắn nhóm kia để đôi co.', 5, 'Tranh cãi có thể làm tình hình leo thang.')]);
+		specialScene.routeOnWrong = true;
+		specialScene.antagonists = [{ x: 625, y: 292, name: 'Huy', color: '#8d5360' }, { x: 690, y: 308, name: 'Tú', color: '#68566f' }];
+		const badRoute = [
+			{ day: 3, title: 'Cuộc đua ngoài cổng', speaker: 'Huy · người rủ rê', background: 'street', actors: [{ x: 626, y: 292, name: 'Huy', color: '#8d5360' }, { x: 690, y: 308, name: 'Tú', color: '#68566f' }], text: 'Nhóm kia phóng xe trên đường và ép bạn nhập cuộc. Một chiếc xe mất kiểm soát; Lan hoảng sợ khi thấy bạn mình bị thương. Đua xe trên đường công cộng đặt cả người tham gia lẫn người đi đường vào nguy hiểm.', choices: [choice('Cổ vũ nhóm và tiếp tục bám theo.', 0, 'Bạn tiếp sức cho hành vi nguy hiểm.'), choice('Quay clip để nổi tiếng trong nhóm.', 5, 'Phát tán hình ảnh có thể làm người bị thương tổn thương thêm.'), choice('Báo người lớn và gọi trợ giúp y tế nếu có người bị thương.', 20, 'Bạn giảm nguy cơ bằng cách gọi người có thể can thiệp.') ] },
+			{ day: 3, title: 'Con hẻm phía sau', speaker: 'Tú · người rủ rê', background: 'alley', actors: [{ x: 625, y: 300, name: 'Tú', color: '#68566f' }, { x: 690, y: 320, name: 'Huy', color: '#8d5360' }], text: 'Trong con hẻm, một bạn trong nhóm đưa ra chất không rõ nguồn gốc và rủ mọi người dùng thử để “bớt căng thẳng”. Lan muốn rời đi, nhưng nhóm chế giễu ai từ chối.', choices: [choice('Dùng thử để được nhóm chấp nhận.', 0, 'Chất không rõ nguồn gốc có thể gây hại và dẫn đến lệ thuộc.'), choice('Ép Lan ở lại để giữ bí mật.', 0, 'Ngăn người khác rời đi khiến họ kém an toàn hơn.'), choice('Cùng Lan rời hẻm và báo người lớn đáng tin.', 20, 'Bạn giúp Lan thoát khỏi áp lực và tìm hỗ trợ.') ] },
+			{ day: 4, title: 'Tiệm sửa xe cuối phố', speaker: 'Huy · người rủ rê', background: 'garage', actors: [{ x: 615, y: 300, name: 'Huy', color: '#8d5360' }, { x: 690, y: 320, name: 'Tú', color: '#68566f' }], text: 'Chiếc xe trong cuộc đua bị hỏng. Nhóm muốn giấu chuyện và gây áp lực để bạn nhận lỗi thay. Lan bị đau nhưng mọi người ngại gọi người lớn.', choices: [choice('Nói dối để che cho nhóm.', 0, 'Che giấu khiến người bị thương khó nhận trợ giúp.'), choice('Bỏ đi, mặc kệ Lan.', 0, 'Rời đi mà không gọi trợ giúp có thể làm hậu quả nặng hơn.'), choice('Nói thật và nhờ người lớn đưa Lan đi kiểm tra.', 20, 'Bạn ưu tiên sức khỏe và sự thật.') ] },
+			{ day: 4, title: 'Quán trò chơi điện tử', speaker: 'Tú · người rủ rê', background: 'arcade', actors: [{ x: 610, y: 304, name: 'Tú', color: '#68566f' }, { x: 695, y: 317, name: 'Huy', color: '#8d5360' }], text: 'Nhóm rủ bạn bỏ buổi học để ở lại quán. Một bạn đề nghị lấy tiền của người khác để trả khoản nợ trong nhóm rồi bắt bạn giữ im lặng.', choices: [choice('Giúp nhóm lấy tiền và nói dối khi bị hỏi.', 0, 'Lấy tiền và che giấu có thể gây hậu quả cho nhiều người.'), choice('Im lặng để không bị nhóm loại ra.', 5, 'Im lặng không làm áp lực hay khoản nợ biến mất.'), choice('Từ chối giữ bí mật và tìm người lớn để báo việc bị ép buộc.', 20, 'Bạn đặt ranh giới và tìm người có thể bảo vệ mình.') ] },
+			{ day: 5, title: 'Xung đột dưới cầu vượt', speaker: 'Huy · người rủ rê', background: 'underpass', actors: [{ x: 610, y: 305, name: 'Huy', color: '#8d5360' }, { x: 690, y: 320, name: 'Tú', color: '#68566f' }], text: 'Một lời trêu chọc biến thành cuộc xô xát. Bạn thấy một người ngã xuống trong khi nhóm hò hét và yêu cầu bạn tham gia.', choices: [choice('Lao vào đánh để chứng minh mình thuộc nhóm.', 0, 'Bạo lực có thể khiến người khác bị thương nặng.'), choice('Quay lại cảnh xô xát rồi chia sẻ.', 0, 'Phát tán video xâm phạm riêng tư và làm tổn thương người bị hại.'), choice('Giữ khoảng cách, gọi người lớn hoặc dịch vụ khẩn cấp.', 20, 'Bạn can thiệp theo cách an toàn và phù hợp.') ] },
+			{ day: 5, title: 'Tin nhắn ở bến xe', speaker: 'Tú · người rủ rê', background: 'street', actors: [{ x: 620, y: 310, name: 'Tú', color: '#68566f' }], text: 'Sau vụ xô xát, nhóm gửi tin nhắn đe dọa và muốn bạn phát tán lời buộc tội chưa kiểm chứng để trả đũa. Lan lo sợ bị nhắm tới tiếp.', choices: [choice('Chuyển tiếp lời buộc tội cho nhiều người.', 0, 'Tin chưa kiểm chứng có thể gây thêm tổn thương.'), choice('Nhắn đe dọa lại để nhóm sợ.', 0, 'Đe dọa qua lại có thể làm nguy cơ tăng.'), choice('Lưu tin nhắn riêng tư và nhờ người lớn hỗ trợ.', 20, 'Bạn giữ thông tin cần thiết mà không làm nội dung lan rộng.') ] },
+			{ day: 6, title: 'Phòng y tế', speaker: 'Lan · bạn cùng lớp', background: 'clinic', actors: [{ x: 625, y: 305, name: 'Lan', color: '#7bb59a' }], text: 'Lan mệt lả sau nhiều ngày chịu áp lực. Một bạn trong nhóm có dấu hiệu sức khỏe đáng lo sau khi dùng chất không rõ nguồn gốc, nhưng những người khác bảo đừng kể với ai.', choices: [choice('Giấu chuyện và để bạn ấy tự chịu.', 0, 'Chậm tìm trợ giúp có thể làm sức khỏe xấu đi.'), choice('Rời khỏi phòng y tế vì sợ bị liên lụy.', 0, 'Bạn ấy không nên bị bỏ lại khi cần chăm sóc.'), choice('Báo nhân viên y tế và người lớn ngay, nói rõ điều mình biết.', 20, 'Trợ giúp y tế kịp thời quan trọng hơn việc giữ bí mật.') ] },
+			{ day: 6, title: 'Buổi tối ở nhà', speaker: 'Lan · bạn cùng lớp', background: 'home', actors: [{ x: 625, y: 305, name: 'Lan', color: '#7bb59a' }], text: 'Lan kể rằng nhóm vẫn nhắn tin gây áp lực và bạn ấy mất ngủ, sợ đến trường. Bạn nhận ra những lựa chọn trước đó đã ảnh hưởng đến cả Lan lẫn chính mình.', choices: [choice('Bảo Lan tự lo và tiếp tục nghe theo nhóm.', 0, 'Phớt lờ ảnh hưởng không khiến vấn đề tự biến mất.'), choice('Đổ lỗi cho Lan vì đã kể chuyện.', 0, 'Đổ lỗi làm người đang cần hỗ trợ khó lên tiếng hơn.'), choice('Lắng nghe Lan và cùng liên hệ người lớn đáng tin.', 20, 'Bạn có thể bắt đầu sửa sai bằng cách tìm trợ giúp.') ] },
+			{ day: 7, title: 'Buổi làm việc ở trường', speaker: 'Cô Hạnh · giáo viên', background: 'office', actors: [{ x: 625, y: 305, name: 'Cô Hạnh', color: '#5b8c81' }], text: 'Nhà trường và gia đình đang xác minh các vụ đua xe, đe dọa và xô xát. Bạn được mời kể lại những gì đã trực tiếp chứng kiến; nhóm muốn bạn nhận hết lỗi thay họ.', choices: [choice('Nhận thay mọi người để nhóm không giận.', 0, 'Nhận lỗi thay người khác khiến sự việc khó được xử lý công bằng.'), choice('Bịa thêm chi tiết để trả đũa nhóm.', 0, 'Thông tin không đúng có thể làm người khác bị oan.'), choice('Kể đúng điều mình biết và nhờ người lớn giúp bảo đảm an toàn.', 20, 'Thành thật giúp người có trách nhiệm tìm cách bảo vệ mọi người.') ] },
+			{ day: 7, title: 'Ngày nhìn lại', speaker: 'Lan · bạn cùng lớp', background: 'office', actors: [{ x: 625, y: 305, name: 'Lan', color: '#7bb59a' }], text: 'Đến cuối tuần, hậu quả vẫn còn: một người đang được chăm sóc, Lan chưa cảm thấy an toàn và nhóm phải chịu trách nhiệm về hành vi của mình. Đây là lúc nhìn lại những lựa chọn đã làm tăng nguy cơ và chấp nhận sự hỗ trợ cần thiết.', choices: [choice('Phủ nhận mọi việc và tiếp tục đi cùng nhóm.', 0, 'Phủ nhận làm mất cơ hội chịu trách nhiệm và sửa chữa.'), choice('Xin lỗi Lan nhưng yêu cầu bạn ấy giữ im lặng.', 0, 'Lời xin lỗi không nên được dùng để ép người khác im lặng.'), choice('Thừa nhận phần trách nhiệm của mình và đồng ý nhận hỗ trợ.', 20, 'Nhận trách nhiệm và tìm hỗ trợ là bước đầu để ngăn việc lặp lại.') ] }
+		];
+		const disciplineScene = {
+			background: 'office',
+			actors: [{ x: 180, y: 305, name: '', color: '#ffffff' }],
+			dialogue: [
+				['Thầy Dũng', 'Ở nhà ba mẹ em dạy em như vậy hả? Thầy, Cô dạy em như vậy hay sao?'],
+				['Nhân vật chính', 'Dạ.. không có..'],
+				['Thầy Dũng', 'Láo lếu! Tiền ba mẹ em nuôi ăn học là để em làm mấy việc này sao?'],
+				['Thầy Dũng', '50 năm tôi dạy ở cái trường này tôi chưa từng thấy ai mà giống như mấy thằng đầu đường xó chợ cả!'],
+				['Nhân vật chính', '...'],
+				['Thầy Dũng', 'Em có biết là những hành vi này ảnh hưởng tới hình ảnh nhà trường, bạn bè, thầy cô, ba mẹ và BẢN THÂN em không?'],
+				['Nhân vật chính', 'Dạ em biết rồi ạ...'],
+				['Thầy Dũng', 'Lập tức kêu phụ huynh đến và nhận giấy thôi học trên phòng giám thị vào 9 giờ sáng mai và ngay lập tức gọi phụ huynh đến đón về!']
+			],
+			choices: [
+				choice('Dạ, em xin nhận lỗi và sẽ kể đúng những gì đã xảy ra.', 20, 'Bạn nhận trách nhiệm và chọn trung thực với thầy, cô và gia đình.'),
+				choice('Tại các bạn rủ em trước, em không có lỗi.', 0, 'Đổ lỗi cho người khác không giúp bạn chịu trách nhiệm về lựa chọn của mình.'),
+				choice('Em không muốn gọi ba mẹ, thầy đừng báo cho gia đình.', 0, 'Che giấu sự việc khiến gia đình và nhà trường khó hỗ trợ, bảo vệ mọi người.')
+			]
+		};
+		const extraScenes = [
+			{ day: 6, title: 'Một lời kêu cứu ở thư viện', speaker: 'Minh · người chứng kiến', text: 'Trong thư viện, một bạn bị nhóm khác giật sách và chặn lối đi. Một vài học sinh đứng quanh nhưng chưa ai biết nên làm gì.', choices: [choice('Đứng xem vì không muốn bị liên lụy.', 0, 'Đứng xem không làm tình huống an toàn hơn.'), choice('Giữ khoảng cách, gọi thủ thư hoặc giáo viên.', 0, 'Bạn chọn cách can thiệp an toàn và phù hợp với bối cảnh.'), choice('Chen vào giằng sách lại bằng sức mạnh.', 0, 'Không nên tự biến tình huống thành xô xát.')], followUps: [followUp('Nhóm kia rủ bạn đứng về phía họ và nói bạn kia “đáng bị như vậy”.', [choice('Gật đầu để được nhóm chấp nhận.', 0, 'Bạn đang tiếp tay cho việc làm nhục người khác.'), choice('Từ chối, ở cạnh bạn bị hại và báo người phụ trách.', 20, 'Bạn bảo vệ bạn ấy mà không đối đầu nguy hiểm.'), choice('Quay video rồi gửi cho cả lớp.', 5, 'Bằng chứng cần được gửi cho người có trách nhiệm, không phát tán.')]), followUp('Bạn bị hại nói mình sợ bị trả đũa.', [choice('Bảo bạn ấy im lặng.', 0, 'Im lặng có thể khiến hành vi tiếp tục.'), choice('Lắng nghe và cùng tìm người lớn đáng tin.', 20, 'Bạn tôn trọng nỗi sợ và kết nối hỗ trợ.'), choice('Hứa sẽ tự trả đũa giúp bạn ấy.', 5, 'Trả đũa có thể làm nguy cơ tăng lên.')]), followUp('Thủ thư đề nghị nhóm cùng xác nhận sự việc.', [choice('Kể thêm điều mình không nhìn thấy.', 0, 'Chỉ nên kể điều bạn trực tiếp biết.'), choice('Nói chính xác điều đã quan sát.', 20, 'Thông tin trung thực giúp xử lý công bằng.'), choice('Đăng tên nhóm kia lên mạng.', 5, 'Xử lý chính thức an toàn hơn công khai làm nhục.')])] },
+			{ day: 6, title: 'Bữa trưa không an toàn', speaker: 'Vy · bạn cùng lớp', text: 'Ở căn tin, một nhóm chiếm chỗ ngồi của Vy, làm đổ khay thức ăn và cười khi Vy tìm cách dọn dẹp.', choices: [choice('Cười theo để không bị nhắm đến.', 0, 'Cười theo làm Vy tổn thương hơn.'), choice('Hỏi Vy có cần giúp và tìm nhân viên hoặc giáo viên.', 0, 'Bạn đang hỗ trợ mà không làm tình huống căng thẳng.'), choice('Hất khay của nhóm kia xuống.', 0, 'Trả đũa có thể gây nguy hiểm và thiệt hại thêm.')], followUps: [followUp('Một bạn đưa điện thoại cho bạn và bảo quay lại cảnh Vy bị bẽ mặt.', [choice('Quay vì mọi người đang cười.', 0, 'Không nên biến sự tổn thương thành nội dung giải trí.'), choice('Từ chối quay, giúp Vy rời khỏi đám đông và báo người lớn.', 20, 'Bạn bảo vệ quyền riêng tư và sự an toàn của Vy.'), choice('Quay nhưng giữ riêng cho mình.', 5, 'Không quay vẫn an toàn hơn và nên báo người có trách nhiệm.')]), followUp('Vy nói mình không muốn quay lại căn tin.', [choice('Bảo Vy tự thích nghi.', 0, 'Vy cần được hỗ trợ để không bị hạn chế sinh hoạt.'), choice('Cùng Vy lập kế hoạch đi cùng bạn và báo giáo viên.', 20, 'Bạn giúp Vy lấy lại cảm giác an toàn.'), choice('Rủ Vy tránh học cả ngày.', 5, 'Nghỉ học không giải quyết hành vi bắt nạt.')]), followUp('Nhân viên căn tin hỏi chuyện gì đã xảy ra.', [choice('Nói rằng chỉ là tai nạn dù bạn biết không phải.', 0, 'Che giấu khiến hành vi khó được xử lý.'), choice('Kể đúng điều đã thấy và để nhân viên hỗ trợ.', 20, 'Bạn trung thực và giúp ngăn việc lặp lại.'), choice('Đổ lỗi ngay cho người gần nhất.', 5, 'Cần phân biệt điều đã thấy với điều chỉ suy đoán.')])] }
+		];
+		extraScenes.push(...[
+			['Phòng y tế và lời xin lỗi', 'Hà · bạn cùng lớp', 'Hà đến phòng y tế sau khi bị xô ngã. Một bạn muốn xin lỗi nhưng nhóm vẫn đứng ngoài cửa cười cợt.'],
+			['Câu lạc bộ sau giờ học', 'Lan · thành viên câu lạc bộ', 'Lan bị ép ký tên vào một danh sách để đổ lỗi cho người khác sau một vụ việc trong câu lạc bộ.'],
+			['Cuộc họp lớp an toàn', 'Minh · đại diện lớp', 'Lớp tổ chức cuộc họp để tìm cách ngăn bắt nạt, nhưng một vài bạn muốn biến cuộc họp thành nơi chỉ trích nạn nhân.'],
+			['Kế hoạch cùng bảo vệ nhau', 'Quân · bạn cùng lớp', 'Sau nhiều tình huống, Quân đề xuất một kế hoạch để mọi người biết cách gọi hỗ trợ khi có nguy cơ.']
+		].map(([title, speaker, text]) => ({ day: 7, title, speaker, text, choices: [choice('Làm theo số đông để cuộc việc kết thúc nhanh.', 0, 'Làm theo áp lực không giúp tình huống an toàn hơn.'), choice('Lắng nghe người bị ảnh hưởng và tìm người có trách nhiệm.', 0, 'Bạn đang đặt sự an toàn và sự thật lên trước.'), choice('Tự giải quyết bằng cách gây áp lực ngược lại.', 0, 'Gây áp lực ngược lại vẫn có thể làm người khác tổn thương.')], followUps: [followUp('Một bạn nói nếu không làm theo thì sẽ bị loại khỏi nhóm.', [choice('Đồng ý để không bị cô lập.', 0, 'Bạn đang để áp lực nhóm quyết định thay mình.'), choice('Từ chối, giữ bằng chứng và tìm người lớn hỗ trợ.', 20, 'Bạn giữ ranh giới và chọn kênh hỗ trợ an toàn.'), choice('Đe dọa sẽ kể bí mật của nhóm.', 5, 'Đe dọa qua lại không giải quyết vấn đề.')]), followUp('Người bị ảnh hưởng hỏi bạn có đứng về phía họ không.', [choice('Bảo họ tự lo phần của mình.', 0, 'Người bị ảnh hưởng cần được đồng hành.'), choice('Lắng nghe, tôn trọng lựa chọn và cùng lập kế hoạch an toàn.', 20, 'Bạn hỗ trợ có trách nhiệm và không tước quyền quyết định.'), choice('Kể chuyện của họ cho cả lớp.', 5, 'Không nên chia sẻ chuyện riêng tư khi chưa được đồng ý.')]), followUp('Giáo viên đề nghị mọi người thống nhất cách xử lý chính thức.', [choice('Bỏ qua vì nhóm đã hứa sẽ tự giải quyết.', 0, 'Lời hứa không thay thế một kế hoạch bảo vệ rõ ràng.'), choice('Tham gia kế hoạch và báo ngay khi có nguy cơ mới.', 20, 'Bạn giúp xây dựng môi trường an toàn lâu dài.'), choice('Đăng bài tuyên bố ai đúng ai sai.', 5, 'Xử lý riêng tư và có trách nhiệm sẽ an toàn hơn.')])] })));
+		scenes.push(...extraScenes);
+		scenes.forEach((scene, index) => {
+			scene.level = Math.min(Math.floor(index / 2) + 1, levels.length);
+			scene.levelTitle = levels[scene.level - 1][0];
+			scene.skill = levels[scene.level - 1][1];
+			scene.background = scene.background || ['corridor', 'yard', 'classroom', 'street', 'library', 'canteen', 'clinic', 'club', 'meeting', 'yard'][scene.level - 1];
+			scene.crowd = [0, 1, 2, 3, 7, 8, 12, 14, 15, 16, 18, 19].includes(index);
+		});
+		const tenLevelMaxScore = tenLevelSceneCount * 20;
+
+		function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
+		function getSafetyScore() { return tenLevelMaxScore ? clamp(Math.round(state.score / tenLevelMaxScore * 400), 0, 400) : 0; }
+		function getQuizSafetyPoints(level, choicePoints) {
+			if (choicePoints >= 15) return 20;
+			if (level >= 7) return choicePoints > 0 ? 0 : -10;
+			return choicePoints > 0 ? 10 : 0;
+		}
+		function distance(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+		function npcGroundY(npc) { return clamp(npc.y + 40, 355, 375); }
+		function crowdNpcsForScene(sceneIndex) {
+			if (!scenes[sceneIndex]?.crowd) return [];
+			const lead = npcs.find(npc => npc.scene === sceneIndex);
+			if (!lead) return [];
+			const leadY = npcGroundY(lead);
+			const offsets = [[-132, -78], [132, -72], [-30, 130], [142, 86]];
+			const crowdSize = [3, 4, 2, 3, 4, 2, 3, 4, 2, 3][sceneIndex % 10];
+			return Array.from({ length: crowdSize }, (_, index) => {
+				const [offsetX, offsetY] = offsets[index % offsets.length];
+				return { x: clamp(lead.x + offsetX, 85, 715), y: clamp(leadY + offsetY, 120, 380) };
+			});
+		}
+		function nearNpc() {
+			if (state.intro) return null;
+			return npcs.find(npc => npc.scene === state.scene && distance(player, { x: npc.x, y: npcGroundY(npc) }) < 76);
+		}
+		function setToast(message) { ui.toast.textContent = message; clearTimeout(setToast.timer); setToast.timer = setTimeout(() => ui.toast.textContent = '', 2200); }
+		function updateLearningNote(points, isGraded = true) { ui.learningNote.classList.toggle('hidden', !isGraded || (points !== 0 && points !== 5)); }
+		function updateMobileStick(event) {
+			const bounds = ui.mobileStick.getBoundingClientRect();
+			const screenX = event.clientX - (bounds.left + bounds.width / 2);
+			const screenY = event.clientY - (bounds.top + bounds.height / 2);
+			const appTransform = getComputedStyle(document.getElementById('gameApp')).transform;
+			const matrix = appTransform === 'none' ? new DOMMatrix() : new DOMMatrix(appTransform);
+			const gameDirection = new DOMPoint(screenX, screenY).matrixTransform(matrix.inverse());
+			let x = gameDirection.x;
+			let y = gameDirection.y;
+			const maxTravel = (bounds.width - ui.mobileStickKnob.offsetWidth) / 2 - 8;
+			const length = Math.hypot(x, y);
+			if (length > maxTravel) { x *= maxTravel / length; y *= maxTravel / length; }
+			ui.mobileStickKnob.style.transform = `translate(${x}px, ${y}px)`;
+			mobileInput.x = x / maxTravel;
+			mobileInput.y = y / maxTravel;
+			mobileInput.active = length > 8;
+			if (state.opening === 'homeTutorial' && state.tutorialStep === 'move' && mobileInput.active) {
+				const angle = Math.atan2(y, x);
+				if (mobileInput.lastAngle !== null) {
+					const difference = Math.atan2(Math.sin(angle - mobileInput.lastAngle), Math.cos(angle - mobileInput.lastAngle));
+					state.tutorialRotation = Math.min(Math.PI * 2, state.tutorialRotation + Math.abs(difference));
+					if (state.tutorialRotation >= Math.PI * 2 - .02) state.tutorialRotation = Math.PI * 2;
+					renderPanel();
+					if (state.tutorialRotation >= Math.PI * 2) showInteractPrompt();
+				}
+				mobileInput.lastAngle = angle;
+			} else {
+				mobileInput.lastAngle = null;
+			}
+		}
+		function releaseMobileStick() {
+			mobileInput.pointerId = null;
+			mobileInput.x = 0;
+			mobileInput.y = 0;
+			mobileInput.active = false;
+			mobileInput.lastAngle = null;
+			ui.mobileStickKnob.style.transform = '';
+		}
+		function drawText(text, x, y, size, color, align = 'center') { ctx.fillStyle = color; ctx.font = `700 ${size}px Trebuchet MS, sans-serif`; ctx.textAlign = align; ctx.fillText(text, x, y); }
+
+		function drawScene(time) {
+			const w = logicalCanvasWidth, h = logicalCanvasHeight;
+			ctx.clearRect(0, 0, w, h);
+			if (state.opening.startsWith('home')) {
+				drawHome(w, h);
+				ctx.fillStyle = '#6b4d3a'; ctx.fillRect(28, 190, 90, 205);
+				ctx.fillStyle = '#d7b783'; ctx.fillRect(37, 199, 72, 187);
+				drawText('CỬA RA', 73, 178, 12, '#193047');
+				if (state.opening === 'homeMother') drawNpc(motherActor, time, 0, false);
+				drawPlayer(time);
+				if (state.opening === 'homeExit' && distance(player, homeDoor) < 76) drawText('E  RA KHỎI NHÀ', homeDoor.x + 30, homeDoor.y + 72, 12, '#12716f');
+				return;
+			}
+			if (state.epilogue) {
+				if (state.epilogue === 'checkpointEvaluation' || state.epilogue === 'walkHome') drawStreet(w, h);
+				else if (state.epilogue === 'outside') drawRestroomOutside(w, h);
+				else if (state.epilogue === 'hallway') drawSchoolHallway(w, h);
+				else if (state.epilogue === 'checkpointDiscipline' || state.epilogue === 'disciplineBadEnding') drawOffice(w, h);
+				else if (['chaseAlley1', 'chaseAlley2', 'chaseAlley3', 'nightChoice', 'alleyPolice'].includes(state.epilogue)) drawActionAlley(w, h, state.alleyStage || 3);
+				else if (state.epilogue === 'gateEnding') drawStreet(w, h);
+				else if (['classroom', 'paperRead', 'classQuiz', 'classDone'].includes(state.epilogue)) drawClassroom(w, h);
+				else drawRestroomInside(w, h);
+				const disciplineEpilogue = state.epilogue === 'checkpointDiscipline' || state.epilogue === 'disciplineBadEnding';
+				if (disciplineEpilogue) drawNpc(sevenLevelDisciplineActor, time, 0, false);
+				if (state.epilogue === 'nightChoice') alleyBullies.forEach((actor, index) => drawNpc(actor, time, index, false));
+				if (['chaseAlley1', 'chaseAlley2', 'chaseAlley3'].includes(state.epilogue)) {
+					alleyBullies.forEach((actor, index) => drawNpc({
+						...actor,
+						x: clamp(player.x - 150 + index * 54, 55, 740),
+						y: player.y + (index ? 25 : -20)
+					}, time, index, false));
+				}
+				if (state.epilogue === 'alleyPolice') {
+					if (!state.policeArrestStarted) alleyBullies.forEach((actor, index) => drawNpc(actor, time, index, false));
+					const progress = state.policeArrivalProgress;
+					alleyPolice.forEach((actor, index) => drawNpc({
+						...actor,
+						x: 800 + (actor.x - 800) * progress + (state.policeArrestStarted ? state.policeArrestProgress * 300 : 0),
+						y: actor.y
+					}, time, index + 2, false));
+					if (state.policeArrestStarted) {
+						alleyBullies.forEach((actor, index) => drawNpc({
+							...actor,
+							x: actor.x + state.policeArrestProgress * 110,
+							y: actor.y
+						}, time, index, false));
+					}
+				}
+				if (state.epilogue === 'quiz') restroomGroup.forEach((actor, index) => drawNpc(actor, time, index, false));
+				drawPlayer(time, disciplineEpilogue, disciplineEpilogue ? 'Thầy Dũng' : '');
+				return;
+			}
+			const routeScene = state.route === 'bad' ? badRoute[state.routeStep] : state.route === 'discipline' || state.route === 'evaluation' ? disciplineScene : null;
+			const background = state.intro ? 'street' : routeScene?.background || scenes[state.scene]?.background || 'yard';
+			if (background === 'corridor') drawCorridor(w, h);
+			else if (background === 'street') drawStreet(w, h);
+			else if (background === 'alley') drawAlley(w, h);
+			else if (background === 'garage') drawGarage(w, h);
+			else if (background === 'arcade') drawArcade(w, h);
+			else if (background === 'underpass') drawUnderpass(w, h);
+			else if (background === 'home') drawHome(w, h);
+			else if (background === 'office') drawOffice(w, h);
+			else if (background === 'classroom') drawClassroom(w, h);
+			else if (background === 'library') drawLibrary(w, h);
+			else if (background === 'canteen') drawCanteen(w, h);
+			else if (background === 'clinic') drawClinic(w, h);
+			else if (background === 'club') drawClub(w, h);
+			else if (background === 'meeting') drawMeeting(w, h);
+			else drawSchoolyard(w, h);
+			if (background === 'yard' && state.route !== 'bad') drawMidAutumnDecor(w, h);
+			if (state.intro) {
+				introPeople.forEach(person => {
+					const minX = -70;
+					const pathLength = w + 140;
+					const cycle = ((time - state.introStartedAt) / 1000 * person.speed + person.x - minX) % (pathLength * 2);
+					const x = minX + (cycle <= pathLength ? cycle : pathLength * 2 - cycle);
+					const walker = { ...person, x };
+					drawNpc(walker, time, 99, false);
+				});
+				const guard = gateGuardPosition(time);
+				ctx.save();
+				ctx.translate(0, -20);
+				drawNpc({ x: guard.x, y: clamp(guard.y, 355, 375) - 40, name: 'Bảo vệ', color: '#365d49', nameColor: '#64c9ff' }, time, 99, false);
+				ctx.restore();
+				drawInformationBoard();
+				if (state.paperSamplesCollected && distance(player, schoolGate) < 76) drawText('E  VÀO TRƯỜNG', schoolGate.x, schoolGate.y + 72, 12, '#12716f');
+			} else if (state.route === 'bad' || state.route === 'discipline' || state.route === 'evaluation') {
+				const nameColor = background === 'street' ? '#ffffff' : null;
+				routeScene.actors.forEach((actor, index) => drawNpc(actor, time, index, false, nameColor));
+			} else {
+				const nameColor = background === 'street' ? '#ffffff' : null;
+				drawCrowd(time, nameColor);
+				npcs.forEach((npc, index) => { if (npc.scene === state.scene) drawNpc(npc, time, index, true, nameColor); });
+				scenes[state.scene]?.antagonists?.forEach((actor, index) => drawNpc(actor, time, index, false, nameColor));
+			}
+			const disciplineSceneActive = state.route === 'discipline' || state.route === 'evaluation';
+			drawPlayer(time, background === 'office', disciplineSceneActive ? 'Thầy Dũng' : '');
+		}
+
+		function drawInformationBoard() {
+			const board = { x: 150, y: 284, scale: .7 };
+			ctx.save();
+			ctx.translate(board.x, board.y);
+			ctx.scale(board.scale, board.scale);
+			ctx.translate(-400, -198);
+			ctx.fillStyle = '#73583c'; ctx.fillRect(199, 64, 402, 132);
+			ctx.fillStyle = '#286b50'; ctx.fillRect(208, 72, 384, 112);
+			ctx.strokeStyle = '#b88e57'; ctx.lineWidth = 5; ctx.strokeRect(205, 69, 390, 118);
+			drawText('BẢNG THÔNG TIN', 400, 92, 13, '#f7efc8');
+			[[278, 115, -5], [363, 121, 3], [447, 114, -3], [520, 124, 5]].forEach(([x, y, rotation], index) => {
+				ctx.save(); ctx.translate(x, y); ctx.rotate(rotation * Math.PI / 180);
+				ctx.fillStyle = index % 2 ? '#fff4cf' : '#fffdf2'; ctx.fillRect(-24, -15, 48, 34);
+				ctx.strokeStyle = '#d1c7ac'; ctx.lineWidth = 1; ctx.strokeRect(-24, -15, 48, 34);
+				ctx.strokeStyle = '#8ba5a0'; ctx.beginPath(); ctx.moveTo(-17, -6); ctx.lineTo(15, -6); ctx.moveTo(-17, 1); ctx.lineTo(12, 1); ctx.moveTo(-17, 8); ctx.lineTo(8, 8); ctx.stroke();
+				ctx.fillStyle = '#ef755e'; ctx.beginPath(); ctx.arc(0, -14, 3, 0, Math.PI * 2); ctx.fill();
+				ctx.restore();
+			});
+			ctx.fillStyle = '#73583c'; ctx.fillRect(380, 196, 40, 22); ctx.fillRect(346, 216, 108, 8);
+			ctx.restore();
+			if (distance(player, board) < 94) {
+				const prompt = state.paperSamplesCollected ? 'ĐÃ LƯU MẪU GIẤY' : 'E  LƯU MẪU GIẤY';
+				drawText(prompt, board.x, board.y + 43 * board.scale, 12, '#12716f');
+			}
+		}
+
+		function drawRestroomOutside(w, h) {
+			const wall = ctx.createLinearGradient(0, 0, 0, h);
+			wall.addColorStop(0, '#dce9e5'); wall.addColorStop(.68, '#eef0e7'); wall.addColorStop(.69, '#a88662'); wall.addColorStop(1, '#80664f');
+			ctx.fillStyle = wall; ctx.fillRect(0, 0, w, h);
+			ctx.fillStyle = '#b5d3ce'; ctx.fillRect(0, 70, 250, 150); ctx.strokeStyle = '#789c96'; ctx.lineWidth = 7; ctx.strokeRect(0, 70, 250, 150);
+			ctx.fillStyle = '#fffdf2'; ctx.fillRect(500, 85, 225, 285); ctx.strokeStyle = '#6c5948'; ctx.lineWidth = 9; ctx.strokeRect(496, 81, 233, 293);
+			ctx.fillStyle = '#8b7159'; ctx.fillRect(525, 108, 175, 262); ctx.fillStyle = '#c8d9ce'; ctx.fillRect(544, 128, 137, 222);
+			ctx.fillStyle = '#f5f0df'; ctx.fillRect(532, 48, 164, 38); ctx.strokeStyle = '#789c96'; ctx.lineWidth = 3; ctx.strokeRect(532, 48, 164, 38);
+			drawText('NHÀ VỆ SINH', 614, 73, 14, '#193047');
+			ctx.fillStyle = '#729da0'; ctx.fillRect(0, 465, w, 35);
+			if (distance(player, restroomEntry) < 76) drawText('E  VÀO NHÀ VỆ SINH', restroomEntry.x, restroomEntry.y + 72, 12, '#12716f');
+		}
+
+		function drawRestroomInside(w, h) {
+			ctx.fillStyle = '#d7e5e1'; ctx.fillRect(0, 0, w, h);
+			ctx.fillStyle = '#edf2ec'; ctx.fillRect(0, 0, w, 300);
+			for (let x = 0; x < w; x += 80) {
+				ctx.strokeStyle = '#c0d5d0'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 300); ctx.stroke();
+			}
+			for (let y = 0; y < 300; y += 60) {
+				ctx.strokeStyle = '#c0d5d0'; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+			}
+			ctx.fillStyle = '#9c8063'; ctx.fillRect(0, 300, w, 200); ctx.fillStyle = '#d5c19e'; ctx.fillRect(0, 306, w, 6);
+			ctx.fillStyle = '#82684e'; ctx.fillRect(36, 125, 105, 180); ctx.fillStyle = '#d8e7e0'; ctx.fillRect(47, 136, 83, 158); drawText('LỐI RA', 89, 112, 14, '#193047');
+			ctx.fillStyle = '#789e9b'; ctx.fillRect(590, 90, 155, 24); ctx.fillRect(610, 114, 14, 100); ctx.fillRect(711, 114, 14, 100);
+			ctx.fillStyle = '#e7f0ec'; [625, 675, 725].forEach(x => { ctx.beginPath(); ctx.ellipse(x, 236, 17, 28, 0, 0, Math.PI * 2); ctx.fill(); });
+			if (state.epilogue === 'escape' && distance(player, restroomExit) < 76) drawText('E  THOÁT RA HÀNH LANG', restroomExit.x + 55, 350, 11, '#fffdf2');
+		}
+
+		function drawSchoolHallway(w, h) {
+			drawCorridor(w, h);
+			ctx.fillStyle = '#6e5946'; ctx.fillRect(624, 76, 132, 294);
+			ctx.fillStyle = '#c5aa7b'; ctx.fillRect(635, 88, 110, 282);
+			ctx.fillStyle = '#e9dfc6'; ctx.fillRect(648, 102, 84, 254);
+			ctx.fillStyle = '#9d8062'; ctx.beginPath(); ctx.arc(714, 231, 5, 0, Math.PI * 2); ctx.fill();
+			ctx.fillStyle = '#f5f0df'; ctx.fillRect(635, 42, 110, 30); ctx.strokeStyle = '#8d633c'; ctx.lineWidth = 3; ctx.strokeRect(635, 42, 110, 30);
+			drawText('LỚP 8A', 690, 62, 13, '#193047');
+			if (distance(player, classroomDoor) < 76) drawText('E  VÀO LỚP', classroomDoor.x, classroomDoor.y + 72, 12, '#12716f');
+		}
+		function drawCrowd(time, nameColor = null) {
+			const crowd = crowdNpcsForScene(state.scene);
+			if (!crowd.length) return;
+			const colors = ['#e7a36d', '#8db0df', '#d694bb', '#91bb83'];
+			crowd.forEach((position, index) => {
+				const crowdNpc = { ...position, name: index % 2 ? 'Bạn' : 'Bạn học', color: colors[index % colors.length], label: 'HỌC SINH' };
+				drawNpc(crowdNpc, time, index, false, nameColor);
+			});
+		}
+
+		function drawRoom(w, h, floor, wall, accent, title) {
+			ctx.fillStyle = wall; ctx.fillRect(0, 0, w, h);
+			ctx.fillStyle = floor; ctx.fillRect(0, 260, w, 240);
+			ctx.fillStyle = accent; ctx.fillRect(0, 248, w, 12);
+			ctx.fillStyle = '#fff8df'; ctx.fillRect(46, 52, 708, 142);
+			ctx.strokeStyle = '#b98c62'; ctx.lineWidth = 6; ctx.strokeRect(42, 48, 716, 150);
+			drawText(title, 400, 82, 18, '#193047');
+		}
+
+		function drawClassroom(w, h) {
+			drawRoom(w, h, '#c9a878', '#e8dfcf', '#d7b47a', 'PHÒNG HỌC 8A');
+			ctx.fillStyle = '#253e4b'; ctx.fillRect(85, 105, 250, 70); ctx.fillStyle = '#f7f0d1'; drawText('LẮNG NGHE · TÔN TRỌNG · HỖ TRỢ', 210, 145, 11, '#f7f0d1');
+			for (let x = 420; x < 720; x += 100) { ctx.fillStyle = '#87603f'; ctx.fillRect(x, 295, 62, 12); ctx.fillRect(x + 8, 307, 7, 45); ctx.fillRect(x + 48, 307, 7, 45); }
+			if (['classroom', 'paperRead', 'classQuiz', 'classDone'].includes(state.epilogue)) {
+				ctx.fillStyle = '#fffdf0'; ctx.fillRect(classroomPaper.x - 13, classroomPaper.y - 7, 26, 16);
+				ctx.strokeStyle = '#8a765b'; ctx.lineWidth = 1; ctx.strokeRect(classroomPaper.x - 13, classroomPaper.y - 7, 26, 16);
+				ctx.strokeStyle = '#a78965'; ctx.beginPath(); ctx.moveTo(classroomPaper.x - 8, classroomPaper.y - 2); ctx.lineTo(classroomPaper.x + 8, classroomPaper.y - 2); ctx.moveTo(classroomPaper.x - 8, classroomPaper.y + 3); ctx.lineTo(classroomPaper.x + 5, classroomPaper.y + 3); ctx.stroke();
+				if (state.epilogue === 'classroom' && distance(player, classroomPaper) < 76) drawText('E  ĐỌC TỜ GIẤY', classroomPaper.x, classroomPaper.y + 33, 11, '#12716f');
+			}
+		}
+
+		function drawLibrary(w, h) {
+			drawRoom(w, h, '#9c7651', '#dce8e2', '#86aaa0', 'THƯ VIỆN');
+			ctx.fillStyle = '#7b5540'; [70, 270, 530].forEach(x => { ctx.fillRect(x, 112, 145, 105); for (let y = 125; y < 200; y += 25) { ctx.fillStyle = '#e7bb70'; ctx.fillRect(x + 12, y, 120, 12); ctx.fillStyle = '#7b5540'; } });
+			ctx.fillStyle = '#6e4d39'; ctx.fillRect(315, 330, 170, 18); ctx.fillRect(335, 348, 12, 45); ctx.fillRect(453, 348, 12, 45);
+		}
+
+		function drawCanteen(w, h) {
+			drawRoom(w, h, '#b88452', '#f2d7a8', '#e49b57', 'CĂN TIN TRƯỜNG');
+			ctx.fillStyle = '#f8f2df'; ctx.fillRect(70, 115, 210, 76); ctx.fillStyle = '#d96d4f'; ctx.fillRect(90, 132, 170, 12); ctx.fillStyle = '#7ba8a0'; ctx.fillRect(90, 158, 120, 12);
+			for (let x = 390; x < 720; x += 120) { ctx.fillStyle = '#75533e'; ctx.fillRect(x, 320, 72, 12); ctx.fillRect(x + 8, 332, 7, 35); ctx.fillRect(x + 57, 332, 7, 35); }
+		}
+
+		function drawClinic(w, h) {
+			drawRoom(w, h, '#bdd7d0', '#eef5f1', '#8cb8ae', 'PHÒNG Y TẾ');
+			ctx.fillStyle = '#ffffff'; ctx.fillRect(92, 112, 180, 58); ctx.fillStyle = '#ef755e'; ctx.fillRect(168, 120, 28, 42); ctx.fillRect(155, 133, 54, 16);
+			ctx.fillStyle = '#ffffff'; ctx.fillRect(430, 300, 190, 65); ctx.fillStyle = '#9fc7bd'; ctx.fillRect(440, 290, 170, 15);
+		}
+
+		function drawClub(w, h) {
+			drawRoom(w, h, '#a76c52', '#d9e0e5', '#cc8c63', 'PHÒNG CÂU LẠC BỘ');
+			ctx.fillStyle = '#f7c95b'; ctx.fillRect(90, 110, 180, 66); drawText('CÙNG LÀM ĐIỀU ĐÚNG', 180, 150, 12, '#193047');
+			ctx.fillStyle = '#6c8b9a'; ctx.fillRect(420, 310, 230, 18); ctx.fillRect(450, 328, 12, 50); ctx.fillRect(608, 328, 12, 50);
+		}
+
+		function drawMeeting(w, h) {
+			drawRoom(w, h, '#8f735f', '#e9e2d5', '#ba8b66', 'PHÒNG HỌP LỚP');
+			ctx.fillStyle = '#ffffff'; ctx.fillRect(95, 112, 610, 66); drawText('NÓI ĐÚNG SỰ THẬT · BẢO VỆ NHAU', 400, 151, 14, '#12716f');
+			ctx.fillStyle = '#73513d'; ctx.fillRect(230, 315, 340, 18); ctx.fillRect(260, 333, 12, 45); ctx.fillRect(528, 333, 12, 45);
+		}
+
+		function drawMidAutumnDecor(w, h) {
+			ctx.fillStyle = '#fff1a8'; ctx.beginPath(); ctx.arc(w - 92, 72, 24, 0, Math.PI * 2); ctx.fill();
+			ctx.fillStyle = '#f3d978'; ctx.beginPath(); ctx.arc(w - 81, 64, 24, 0, Math.PI * 2); ctx.fill();
+			ctx.fillStyle = '#fff4b9';
+			[[42, 58], [285, 78], [505, 34], [w - 28, 116]].forEach(([x, y]) => {
+				ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2); ctx.fill();
+			});
+			ctx.strokeStyle = '#7e5a48'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, 38); ctx.quadraticCurveTo(180, 66, 360, 38); ctx.quadraticCurveTo(560, 10, w, 42); ctx.stroke();
+			function lantern(x, y, color) {
+				ctx.strokeStyle = '#7e5a48'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y - 25); ctx.lineTo(x, y - 5); ctx.stroke();
+				ctx.fillStyle = color; ctx.beginPath(); ctx.ellipse(x, y + 5, 13, 17, 0, 0, Math.PI * 2); ctx.fill();
+				ctx.fillStyle = '#f8e3a0'; ctx.fillRect(x - 2, y - 10, 4, 30);
+				ctx.fillStyle = '#9d4b43'; ctx.fillRect(x - 10, y - 10, 20, 4); ctx.fillRect(x - 10, y + 17, 20, 4);
+				ctx.strokeStyle = '#9d4b43'; ctx.beginPath(); ctx.moveTo(x, y + 21); ctx.lineTo(x, y + 30); ctx.stroke();
+			}
+			lantern(150, 54, '#e85d4f'); lantern(390, 54, '#f2b63f'); lantern(650, 54, '#e85d4f');
+		}
+
+		function drawCorridor(w, h) {
+			ctx.fillStyle = '#e9e0cf'; ctx.fillRect(0, 0, w, h);
+			ctx.fillStyle = '#c9b18d'; ctx.fillRect(0, 0, w, 40);
+			ctx.fillStyle = '#b88c5a'; ctx.fillRect(0, 375, w, 125);
+			ctx.fillStyle = '#dfbd86'; ctx.fillRect(0, 380, w, 5);
+			ctx.fillStyle = '#fff1a8'; ctx.beginPath(); ctx.arc(705, 82, 25, 0, Math.PI * 2); ctx.fill();
+			ctx.fillStyle = '#f3d978'; ctx.beginPath(); ctx.arc(716, 74, 25, 0, Math.PI * 2); ctx.fill();
+			ctx.fillStyle = '#fff4b9';
+			[[35, 62], [285, 74], [520, 32], [770, 112]].forEach(([x, y]) => {
+				ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2); ctx.fill();
+			});
+			ctx.strokeStyle = '#7e5a48'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, 38); ctx.quadraticCurveTo(170, 66, 340, 38); ctx.quadraticCurveTo(510, 10, 800, 42); ctx.stroke();
+			function lantern(x, y, color) {
+				ctx.strokeStyle = '#7e5a48'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y - 25); ctx.lineTo(x, y - 5); ctx.stroke();
+				ctx.fillStyle = color; ctx.beginPath(); ctx.ellipse(x, y + 5, 13, 17, 0, 0, Math.PI * 2); ctx.fill();
+				ctx.fillStyle = '#f8e3a0'; ctx.fillRect(x - 2, y - 10, 4, 30);
+				ctx.fillStyle = '#9d4b43'; ctx.fillRect(x - 10, y - 10, 20, 4); ctx.fillRect(x - 10, y + 17, 20, 4);
+				ctx.strokeStyle = '#9d4b43'; ctx.beginPath(); ctx.moveTo(x, y + 21); ctx.lineTo(x, y + 30); ctx.stroke();
+			}
+			lantern(305, 53, '#e85d4f'); lantern(730, 53, '#e85d4f'); lantern(30, 54, '#f2b63f');
+			ctx.fillStyle = '#f5f0df'; ctx.fillRect(55, 70, 210, 105);
+			ctx.strokeStyle = '#8d633c'; ctx.lineWidth = 8; ctx.strokeRect(51, 66, 218, 113);
+			drawText('HÀNH LANG TRƯỜNG', 160, 96, 14, '#193047');
+			drawText('TRUNG THU', 160, 119, 11, '#c45a45');
+			ctx.strokeStyle = '#8fb9b5'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(85, 126); ctx.lineTo(235, 126); ctx.moveTo(85, 151); ctx.lineTo(210, 151); ctx.stroke();
+			ctx.fillStyle = '#d2a064'; ctx.fillRect(360, 55, 105, 285); ctx.fillStyle = '#b47c4d'; ctx.fillRect(370, 65, 85, 265);
+			ctx.fillStyle = '#ead09b'; for (let y = 87; y < 325; y += 38) ctx.fillRect(379, y, 67, 25);
+			ctx.fillStyle = '#6d999d'; ctx.fillRect(0, 470, w, 30);
+		}
+
+		function drawSchoolyard(w, h) {
+			ctx.fillStyle = '#f3ead6'; ctx.fillRect(0, 0, w, h);
+			ctx.fillStyle = '#d9c6a6'; ctx.fillRect(0, 0, w, 42);
+			ctx.fillStyle = '#c6b08e'; ctx.fillRect(0, 42, w, 5);
+			ctx.fillStyle = '#c9a878'; ctx.fillRect(0, 375, w, 125);
+			ctx.fillStyle = '#e0bd87'; ctx.fillRect(0, 380, w, 5);
+			ctx.fillStyle = '#253e4b'; ctx.fillRect(70, 68, 240, 120);
+			ctx.strokeStyle = '#8d633c'; ctx.lineWidth = 8; ctx.strokeRect(66, 64, 248, 128);
+			drawText('BẢNG LỚP 8A', 190, 92, 14, '#f7f0d1');
+			ctx.strokeStyle = '#a8d6d1'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(105, 125); ctx.lineTo(260, 125); ctx.moveTo(105, 153); ctx.lineTo(225, 153); ctx.stroke();
+			ctx.fillStyle = '#b8dfe5'; ctx.fillRect(555, 68, 170, 118); ctx.strokeStyle = '#8d633c'; ctx.lineWidth = 7; ctx.strokeRect(551, 64, 178, 126);
+			ctx.strokeStyle = '#f3ead6'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(640, 68); ctx.lineTo(640, 186); ctx.moveTo(555, 127); ctx.lineTo(725, 127); ctx.stroke();
+			ctx.fillStyle = '#d0a56b'; ctx.fillRect(365, 58, 96, 285); ctx.fillStyle = '#b78351'; ctx.fillRect(374, 68, 78, 265);
+			ctx.fillStyle = '#e3c58e'; for (let y = 88; y < 325; y += 38) ctx.fillRect(382, y, 62, 25);
+			ctx.fillStyle = '#87603f'; for (let x = 90; x < 330; x += 110) { ctx.fillRect(x, 290, 64, 12); ctx.fillRect(x + 8, 302, 7, 56); ctx.fillRect(x + 50, 302, 7, 56); ctx.fillStyle = '#e0a35d'; ctx.fillRect(x + 6, 278, 52, 14); ctx.fillStyle = '#87603f'; }
+			ctx.fillStyle = '#87603f'; for (let x = 510; x < 750; x += 110) { ctx.fillRect(x, 290, 64, 12); ctx.fillRect(x + 8, 302, 7, 56); ctx.fillRect(x + 50, 302, 7, 56); }
+			ctx.fillStyle = '#729da0'; ctx.fillRect(0, 470, w, 30);
+		}
+
+		function drawStreet(w, h) {
+			ctx.fillStyle = '#b9d8e3'; ctx.fillRect(0, 0, w, h);
+			ctx.fillStyle = '#dfe9e6'; ctx.fillRect(0, 45, w, 215);
+			ctx.fillStyle = '#a8b8bd'; ctx.fillRect(0, 260, w, 42);
+			ctx.fillStyle = '#343f4d'; ctx.fillRect(0, 302, w, 198);
+			ctx.fillStyle = '#f6d783';
+			for (let x = 30; x < w; x += 145) ctx.fillRect(x, 394, 72, 8);
+			ctx.fillStyle = '#b8c7c6'; ctx.fillRect(70, 150, 220, 110); ctx.fillRect(520, 130, 215, 130);
+			ctx.fillStyle = '#86b9c9'; ctx.fillRect(90, 170, 55, 60); ctx.fillRect(165, 170, 55, 60); ctx.fillRect(540, 150, 55, 70); ctx.fillRect(615, 150, 55, 70);
+			ctx.fillStyle = '#637681'; ctx.fillRect(315, 88, 110, 172); ctx.fillStyle = '#e9d49d'; ctx.fillRect(327, 105, 86, 138);
+			drawText('CỔNG TRƯỜNG', 370, 132, 13, '#193047');
+			ctx.fillStyle = '#c5d5d1'; ctx.fillRect(455, 170, 22, 90); ctx.fillStyle = '#f4e4a8'; ctx.beginPath(); ctx.arc(466, 151, 15, 0, Math.PI * 2); ctx.fill();
+			ctx.fillStyle = '#4148c9'; ctx.fillRect(470, 62, 275, 58);
+			drawText('THCS MỘC LAN', 607, 99, 24, '#f5d235');
+			ctx.strokeStyle = '#f5d235'; ctx.lineWidth = 3; ctx.strokeRect(470, 62, 275, 58);
+		}
+
+		function drawAlley(w, h) {
+			const dusk = ctx.createLinearGradient(0, 0, 0, h);
+			dusk.addColorStop(0, '#526a78'); dusk.addColorStop(.48, '#9e8e78'); dusk.addColorStop(1, '#364149');
+			ctx.fillStyle = dusk; ctx.fillRect(0, 0, w, h);
+			const exitGlow = ctx.createRadialGradient(400, 172, 8, 400, 172, 190);
+			exitGlow.addColorStop(0, 'rgba(255,218,150,.78)'); exitGlow.addColorStop(1, 'rgba(255,218,150,0)');
+			ctx.fillStyle = exitGlow; ctx.fillRect(190, 0, 420, 390);
+			ctx.fillStyle = '#81918c'; ctx.fillRect(345, 78, 110, 150);
+			ctx.fillStyle = '#596c70'; ctx.fillRect(360, 110, 32, 118); ctx.fillRect(408, 94, 31, 134);
+			ctx.fillStyle = '#d8b983'; ctx.beginPath(); ctx.moveTo(320, 215); ctx.lineTo(480, 215); ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath(); ctx.fill();
+			const paving = ctx.createLinearGradient(0, 220, 0, h);
+			paving.addColorStop(0, '#8e8877'); paving.addColorStop(1, '#454d4c');
+			ctx.fillStyle = paving; ctx.beginPath(); ctx.moveTo(320, 215); ctx.lineTo(480, 215); ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath(); ctx.fill();
+			ctx.fillStyle = '#46575d'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(325, 0); ctx.lineTo(405, 282); ctx.lineTo(0, 322); ctx.closePath(); ctx.fill();
+			ctx.fillStyle = '#586569'; ctx.beginPath(); ctx.moveTo(w, 0); ctx.lineTo(475, 0); ctx.lineTo(395, 282); ctx.lineTo(w, 322); ctx.closePath(); ctx.fill();
+			ctx.fillStyle = '#394a50'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(48, 0); ctx.lineTo(90, 316); ctx.lineTo(0, 322); ctx.closePath(); ctx.fill();
+			ctx.fillStyle = '#35464c'; ctx.beginPath(); ctx.moveTo(w, 0); ctx.lineTo(750, 0); ctx.lineTo(710, 316); ctx.lineTo(w, 322); ctx.closePath(); ctx.fill();
+			function window(x, y, width, height, lit) {
+				ctx.fillStyle = '#293b42'; ctx.fillRect(x - 5, y - 5, width + 10, height + 10);
+				ctx.fillStyle = lit ? '#e7b873' : '#7d9897'; ctx.fillRect(x, y, width, height);
+				ctx.fillStyle = lit ? 'rgba(255,224,157,.5)' : '#b5c4b7'; ctx.fillRect(x + 5, y + 5, width - 10, 4);
+				ctx.strokeStyle = '#34474d'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x + width / 2, y); ctx.lineTo(x + width / 2, y + height); ctx.moveTo(x, y + height / 2); ctx.lineTo(x + width, y + height / 2); ctx.stroke();
+			}
+			window(76, 54, 66, 76, true); window(202, 96, 48, 59, false); window(565, 54, 64, 75, false); window(680, 104, 47, 58, true);
+			ctx.fillStyle = '#765d4e'; ctx.fillRect(42, 202, 91, 112); ctx.fillStyle = '#a88a6d'; ctx.fillRect(51, 210, 73, 104);
+			ctx.fillStyle = '#475b61'; ctx.fillRect(608, 213, 86, 100); ctx.fillStyle = '#7b8780'; ctx.fillRect(616, 220, 70, 93);
+			ctx.fillStyle = '#c9aa70'; ctx.fillRect(96, 42, 106, 19); ctx.fillStyle = '#253d47'; ctx.fillRect(103, 46, 92, 12); drawText('HẺM 12', 149, 56, 10, '#f6e3b5');
+			ctx.strokeStyle = '#263940'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, 38); ctx.quadraticCurveTo(180, 62, 345, 30); ctx.quadraticCurveTo(560, 0, w, 42); ctx.stroke();
+			ctx.strokeStyle = '#333f42'; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(171, 68); ctx.lineTo(171, 103); ctx.stroke();
+			const lampGlow = ctx.createRadialGradient(171, 111, 2, 171, 111, 82);
+			lampGlow.addColorStop(0, 'rgba(255,218,137,.42)'); lampGlow.addColorStop(1, 'rgba(255,218,137,0)');
+			ctx.fillStyle = lampGlow; ctx.fillRect(85, 35, 172, 170);
+			ctx.fillStyle = '#ffe0a0'; ctx.fillRect(163, 100, 16, 6);
+			ctx.strokeStyle = 'rgba(229,213,173,.4)'; ctx.lineWidth = 1;
+			for (let index = 1; index <= 5; index++) {
+				const y = 222 + index * 45;
+				const inset = (y - 215) * .68;
+				ctx.beginPath(); ctx.moveTo(inset, y); ctx.lineTo(w - inset, y); ctx.stroke();
+			}
+			ctx.strokeStyle = 'rgba(53,64,63,.55)';
+			for (let index = 1; index <= 7; index++) { ctx.beginPath(); ctx.moveTo(400, 216); ctx.lineTo(index * 100, h); ctx.stroke(); }
+			ctx.fillStyle = 'rgba(235,205,145,.22)'; ctx.beginPath(); ctx.ellipse(520, 423, 68, 12, -.12, 0, Math.PI * 2); ctx.fill();
+			ctx.fillStyle = 'rgba(29,41,46,.3)'; ctx.fillRect(0, 318, w, 8);
+		}
+
+		function drawActionAlley(w, h, stage) {
+			const palettes = [
+				['#657987', '#40545d', '#555a50'],
+				['#6d737a', '#4c4c52', '#55504a'],
+				['#596b74', '#39464b', '#4b4c48']
+			];
+			const [sky, wall, ground] = palettes[stage - 1];
+			ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h);
+			ctx.fillStyle = wall; ctx.fillRect(0, 48, w, 280);
+			ctx.fillStyle = '#29383d'; ctx.fillRect(0, 328, w, h - 328);
+			ctx.fillStyle = ground; ctx.beginPath(); ctx.moveTo(0, 365); ctx.lineTo(w, 365); ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath(); ctx.fill();
+			for (let x = 25; x < w; x += 145) {
+				ctx.fillStyle = '#253238'; ctx.fillRect(x, 112 + (x % 3) * 18, 88, 104);
+				ctx.fillStyle = stage === 1 && x % 2 ? '#d8bd7e' : '#88918a'; ctx.fillRect(x + 7, 120 + (x % 3) * 18, 74, 88);
+				ctx.fillStyle = 'rgba(255,222,160,.35)'; ctx.fillRect(x + 14, 128 + (x % 3) * 18, 60, 5);
+			}
+			ctx.fillStyle = '#252f33'; ctx.fillRect(0, 317, w, 11);
+			for (let x = 0; x < w; x += 90) {
+				ctx.strokeStyle = 'rgba(226,209,171,.2)'; ctx.lineWidth = 2;
+				ctx.beginPath(); ctx.moveTo(x, 366); ctx.lineTo(x + 26, h); ctx.stroke();
+			}
+			if (stage < 3) {
+				ctx.fillStyle = '#d8bd7e'; ctx.fillRect(718, 145, 52, 172);
+				ctx.fillStyle = '#34454b'; ctx.fillRect(730, 160, 28, 157);
+				drawText('LỐI RA', 744, 135, 12, '#fff0bc');
+			} else {
+				ctx.fillStyle = '#333e42'; ctx.fillRect(675, 70, 125, 280);
+				ctx.fillStyle = '#77827c'; ctx.fillRect(689, 86, 13, 248);
+				ctx.fillStyle = '#77827c'; ctx.fillRect(689, 334, 111, 16);
+				drawText('HẺM CỤT', 744, 116, 13, '#fff0bc');
+			}
+			ctx.fillStyle = '#c9aa70'; ctx.fillRect(24, 42, 152, 24);
+			drawText(`HẺM ${stage}`, 100, 59, 12, '#253d47');
+			if (stage < 3) drawText('Chạy đến lối ra →', 400, 470, 14, '#fff0bc');
+			else drawText('An bị dồn vào góc tường. Hãy chọn cách xử lý an toàn.', 400, 470, 13, '#fff0bc');
+		}
+
+		function drawGarage(w, h) {
+			const wall = ctx.createLinearGradient(0, 0, 0, h);
+			wall.addColorStop(0, '#718087'); wall.addColorStop(.72, '#a08b70'); wall.addColorStop(.73, '#4d5352'); wall.addColorStop(1, '#333e42');
+			ctx.fillStyle = wall; ctx.fillRect(0, 0, w, h);
+			ctx.fillStyle = '#48575b'; ctx.fillRect(64, 76, 388, 218); ctx.strokeStyle = '#c6b18d'; ctx.lineWidth = 8; ctx.strokeRect(60, 72, 396, 226);
+			ctx.strokeStyle = '#758184'; ctx.lineWidth = 3; for (let y = 92; y < 290; y += 25) { ctx.beginPath(); ctx.moveTo(70, y); ctx.lineTo(446, y); ctx.stroke(); }
+			ctx.fillStyle = '#b8734d'; ctx.fillRect(510, 257, 225, 18); ctx.fillRect(534, 275, 13, 105); ctx.fillRect(698, 275, 13, 105);
+			ctx.fillStyle = '#cfb27c'; ctx.fillRect(552, 224, 52, 31); ctx.fillStyle = '#47565b'; ctx.fillRect(563, 230, 30, 25);
+			ctx.fillStyle = '#293b42'; ctx.beginPath(); ctx.arc(510, 356, 36, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#a7a18d'; ctx.beginPath(); ctx.arc(510, 356, 20, 0, Math.PI * 2); ctx.fill();
+			ctx.fillStyle = '#f2d49b'; ctx.fillRect(152, 35, 270, 28); drawText('TIỆM SỬA XE', 287, 55, 14, '#293b42');
+			ctx.fillStyle = '#eacb87'; ctx.fillRect(586, 74, 10, 7); ctx.fillStyle = 'rgba(255,220,152,.18)'; ctx.beginPath(); ctx.arc(591, 118, 95, 0, Math.PI * 2); ctx.fill();
+			ctx.strokeStyle = '#d8c7a4'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, 422); ctx.lineTo(w, 422); ctx.stroke();
+		}
+
+		function drawArcade(w, h) {
+			const room = ctx.createLinearGradient(0, 0, 0, h);
+			room.addColorStop(0, '#243e4d'); room.addColorStop(.68, '#394751'); room.addColorStop(.69, '#82674f'); room.addColorStop(1, '#41474a');
+			ctx.fillStyle = room; ctx.fillRect(0, 0, w, h);
+			ctx.fillStyle = '#e5b65f'; ctx.fillRect(160, 37, 480, 42); drawText('GÓC TRÒ CHƠI', 400, 65, 20, '#263f4c');
+			function cabinet(x, y, color) {
+				ctx.fillStyle = '#172d38'; ctx.fillRect(x, y, 104, 202); ctx.strokeStyle = color; ctx.lineWidth = 5; ctx.strokeRect(x + 3, y + 3, 98, 196);
+				ctx.fillStyle = '#a9c5b7'; ctx.fillRect(x + 13, y + 18, 78, 88); ctx.fillStyle = '#536b69'; ctx.fillRect(x + 19, y + 24, 66, 76);
+				ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x + 40, y + 126, 7, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(x + 63, y + 122, 25, 8);
+				ctx.fillStyle = '#253d48'; ctx.fillRect(x + 21, y + 158, 62, 25);
+			}
+			cabinet(65, 126, '#ee866b'); cabinet(220, 126, '#72c7ba'); cabinet(535, 126, '#e6bb65'); cabinet(690, 126, '#80a9ce');
+			ctx.fillStyle = '#6c5142'; ctx.fillRect(294, 304, 210, 16); ctx.fillRect(315, 320, 12, 76); ctx.fillRect(470, 320, 12, 76);
+			ctx.fillStyle = '#d8d3bd'; ctx.fillRect(0, 446, w, 54); ctx.strokeStyle = '#b19b78'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, 446); ctx.lineTo(w, 446); ctx.stroke();
+		}
+
+		function drawUnderpass(w, h) {
+			const tunnel = ctx.createLinearGradient(0, 0, 0, h);
+			tunnel.addColorStop(0, '#607078'); tunnel.addColorStop(.62, '#333f45'); tunnel.addColorStop(1, '#282f33');
+			ctx.fillStyle = tunnel; ctx.fillRect(0, 0, w, h);
+			ctx.fillStyle = '#9ca79a'; ctx.beginPath(); ctx.moveTo(300, 75); ctx.lineTo(500, 75); ctx.lineTo(550, 302); ctx.lineTo(250, 302); ctx.closePath(); ctx.fill();
+			ctx.fillStyle = '#e5c88e'; ctx.fillRect(349, 155, 102, 146); ctx.fillStyle = '#87958a'; ctx.fillRect(361, 168, 78, 133);
+			ctx.fillStyle = '#4c595c'; ctx.fillRect(0, 0, 215, 345); ctx.fillRect(585, 0, 215, 345);
+			ctx.fillStyle = '#687579'; ctx.fillRect(28, 0, 22, 346); ctx.fillRect(750, 0, 22, 346);
+			ctx.fillStyle = '#464f50'; ctx.beginPath(); ctx.moveTo(0, 326); ctx.lineTo(w, 326); ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath(); ctx.fill();
+			ctx.fillStyle = '#d6bd78'; for (let x = 34; x < w; x += 175) ctx.fillRect(x, 426, 78, 7);
+			ctx.fillStyle = '#f2d68f'; [150, 400, 650].forEach(x => { ctx.fillRect(x - 10, 40, 20, 7); ctx.fillStyle = 'rgba(245,215,150,.12)'; ctx.beginPath(); ctx.arc(x, 98, 65, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#f2d68f'; });
+		}
+
+		function drawHome(w, h) {
+			const wall = ctx.createLinearGradient(0, 0, 0, h);
+			wall.addColorStop(0, '#d8c7a6'); wall.addColorStop(.72, '#eee0c5'); wall.addColorStop(.73, '#987d61'); wall.addColorStop(1, '#775f4c');
+			ctx.fillStyle = wall; ctx.fillRect(0, 0, w, h);
+			ctx.fillStyle = '#708e91'; ctx.fillRect(82, 65, 178, 120); ctx.strokeStyle = '#745b47'; ctx.lineWidth = 8; ctx.strokeRect(78, 61, 186, 128);
+			ctx.strokeStyle = '#d8e0cc'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(171, 66); ctx.lineTo(171, 184); ctx.moveTo(84, 124); ctx.lineTo(258, 124); ctx.stroke();
+			ctx.fillStyle = '#b47756'; ctx.fillRect(340, 255, 330, 105); ctx.fillStyle = '#d18e67'; ctx.fillRect(327, 240, 352, 69); ctx.fillStyle = '#efd5ae'; ctx.fillRect(347, 245, 145, 48); ctx.fillRect(512, 245, 145, 48);
+			ctx.fillStyle = '#78593f'; ctx.fillRect(352, 356, 18, 47); ctx.fillRect(641, 356, 18, 47);
+			ctx.fillStyle = '#83654d'; ctx.fillRect(92, 341, 148, 20); ctx.fillRect(106, 361, 12, 68); ctx.fillRect(214, 361, 12, 68);
+			ctx.fillStyle = '#718d70'; ctx.fillRect(716, 290, 19, 99); ctx.fillStyle = '#6e9975'; ctx.beginPath(); ctx.arc(725, 268, 47, 0, Math.PI * 2); ctx.fill();
+			ctx.fillStyle = '#e8bd68'; ctx.fillRect(689, 87, 12, 12); ctx.fillStyle = 'rgba(255,216,138,.16)'; ctx.beginPath(); ctx.arc(695, 137, 68, 0, Math.PI * 2); ctx.fill();
+			ctx.fillStyle = '#604d41'; ctx.fillRect(0, 430, w, 7);
+		}
+
+		function drawOffice(w, h) {
+			const room = ctx.createLinearGradient(0, 0, 0, h);
+			room.addColorStop(0, '#c3d3ce'); room.addColorStop(.72, '#e7e2d4'); room.addColorStop(.73, '#9d8062'); room.addColorStop(1, '#80694f');
+			ctx.fillStyle = room; ctx.fillRect(0, 0, w, h);
+			ctx.fillStyle = '#789b99'; ctx.fillRect(68, 63, 160, 115); ctx.strokeStyle = '#695b4a'; ctx.lineWidth = 7; ctx.strokeRect(64, 59, 168, 123);
+			ctx.fillStyle = '#f2e8cf'; ctx.fillRect(517, 61, 214, 137); ctx.strokeStyle = '#93775c'; ctx.lineWidth = 5; ctx.strokeRect(517, 61, 214, 137);
+			drawText('PHÒNG GIÁM THỊ', 624, 91, 15, '#193047');
+			ctx.strokeStyle = '#9ab6aa'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(546, 121); ctx.lineTo(700, 121); ctx.moveTo(546, 150); ctx.lineTo(677, 150); ctx.stroke();
+			ctx.fillStyle = '#805e45'; ctx.fillRect(211, 294, 380, 24); ctx.fillRect(234, 318, 18, 91); ctx.fillRect(550, 318, 18, 91);
+			ctx.fillStyle = '#5c7880'; ctx.fillRect(164, 315, 30, 88); ctx.fillRect(610, 315, 30, 88);
+			ctx.fillStyle = '#e6cf9f'; ctx.fillRect(367, 263, 74, 27); ctx.fillStyle = '#72928b'; ctx.fillRect(387, 243, 34, 20);
+			ctx.fillStyle = '#695341'; ctx.fillRect(0, 436, w, 5);
+		}
+
+		function drawNpc(npc, time, index, interactive = false, nameColor = null) {
+			const y = npcGroundY(npc);
+			const groundNpc = { x: npc.x, y };
+			const pulse = Math.sin(time / 300) * 3;
+			ctx.fillStyle = 'rgba(25,48,71,.13)'; ctx.beginPath(); ctx.ellipse(npc.x, y + 28, 27, 8, 0, 0, Math.PI * 2); ctx.fill();
+			ctx.fillStyle = '#f4c9a1'; ctx.beginPath(); ctx.arc(npc.x, y, 17, 0, Math.PI * 2); ctx.fill();
+			ctx.fillStyle = npc.color || '#ffffff'; ctx.beginPath(); ctx.moveTo(npc.x - 20, y + 28); ctx.lineTo(npc.x - 15, y - 5); ctx.lineTo(npc.x + 15, y - 5); ctx.lineTo(npc.x + 20, y + 28); ctx.closePath(); ctx.fill();
+			ctx.fillStyle = '#ffffff'; ctx.fillRect(npc.x - 5, y - 4, 10, 29);
+			ctx.fillStyle = '#d9363e'; ctx.beginPath(); ctx.moveTo(npc.x, y - 5); ctx.lineTo(npc.x - 8, y + 2); ctx.lineTo(npc.x, y + 12); ctx.lineTo(npc.x + 8, y + 2); ctx.closePath(); ctx.fill();
+			ctx.fillRect(npc.x + 1, y + 8, 6, 17);
+			ctx.fillStyle = '#f4c9a1'; ctx.beginPath(); ctx.arc(npc.x, y - 18, 13, 0, Math.PI * 2); ctx.fill();
+			ctx.fillStyle = '#26384b'; ctx.fillRect(npc.x - 13, y - 32, 26, 7);
+			if (npc.name) drawText(npc.name, npc.x, y + 51, 12, nameColor || npc.nameColor || '#193047');
+			if (interactive) {
+				ctx.fillStyle = '#f7c95b'; ctx.beginPath(); ctx.arc(npc.x, y - 55 + pulse, 13, 0, Math.PI * 2); ctx.fill();
+				drawText('!', npc.x, y - 50 + pulse, 16, '#193047');
+				if (distance(player, groundNpc) < 76 && !state.active) { drawText('💬 [E] NÓI CHUYỆN', npc.x, y + 72, 11, '#12716f'); }
+			}
+			if (index === 99) return;
+		}
+
+		function gateGuardPosition(time) {
+			const path = [[320, 345], [480, 345], [480, 380], [320, 380]];
+			const perimeter = 390;
+			let distanceAlong = (time / 30) % perimeter;
+			for (let index = 0; index < path.length; index++) {
+				const start = path[index];
+				const end = path[(index + 1) % path.length];
+				const segmentLength = Math.hypot(end[0] - start[0], end[1] - start[1]);
+				if (distanceAlong <= segmentLength) {
+					const progress = distanceAlong / segmentLength;
+					return { x: start[0] + (end[0] - start[0]) * progress, y: start[1] + (end[1] - start[1]) * progress };
+				}
+				distanceAlong -= segmentLength;
+			}
+			return { x: path[0][0], y: path[0][1] };
+		}
+
+		function drawPlayer(time, seated = false, label = '') {
+			ctx.save(); ctx.translate(player.x, player.y); ctx.scale(player.facing, 1);
+			ctx.fillStyle = 'rgba(25,48,71,.15)'; ctx.beginPath(); ctx.ellipse(0, 28, 25, 7, 0, 0, Math.PI * 2); ctx.fill();
+			if (seated) {
+				ctx.fillStyle = '#f4c9a1'; ctx.beginPath(); ctx.arc(0, -20, 14, 0, Math.PI * 2); ctx.fill();
+				ctx.fillStyle = '#193047'; ctx.fillRect(-15, -34, 30, 8); ctx.fillRect(6, -29, 11, 8);
+				ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.moveTo(-19, -7); ctx.lineTo(-15, -12); ctx.lineTo(15, -12); ctx.lineTo(19, -7); ctx.lineTo(15, 14); ctx.lineTo(-15, 14); ctx.closePath(); ctx.fill();
+				ctx.fillStyle = '#d9363e'; ctx.beginPath(); ctx.moveTo(0, -11); ctx.lineTo(-7, -4); ctx.lineTo(0, 5); ctx.lineTo(7, -4); ctx.closePath(); ctx.fill();
+				ctx.fillStyle = '#26384b'; ctx.fillRect(-14, 13, 28, 8); ctx.fillRect(-13, 21, 9, 11); ctx.fillRect(4, 21, 9, 11);
+				ctx.restore();
+				if (label) drawText(label, player.x, player.y + 51, 12, '#193047');
+				return;
+			}
+			ctx.fillStyle = '#f4c9a1'; ctx.beginPath(); ctx.arc(0, 0, 17, 0, Math.PI * 2); ctx.fill();
+			ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.moveTo(-20, 28); ctx.lineTo(-15, -5); ctx.lineTo(15, -5); ctx.lineTo(20, 28); ctx.closePath(); ctx.fill();
+			ctx.fillStyle = '#ffffff'; ctx.fillRect(-5, -4, 10, 29);
+			ctx.fillStyle = '#d9363e'; ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(-8, 2); ctx.lineTo(0, 12); ctx.lineTo(8, 2); ctx.closePath(); ctx.fill();
+			ctx.fillRect(1, 8, 6, 17);
+			ctx.fillStyle = '#f5c9a2'; ctx.beginPath(); ctx.arc(0, -20, 14, 0, Math.PI * 2); ctx.fill();
+			ctx.fillStyle = '#193047'; ctx.fillRect(-15, -34, 30, 8); ctx.fillRect(6, -29, 11, 8);
+			ctx.fillStyle = '#fff9ed'; ctx.fillRect(4, 6, 6, 6); ctx.restore();
+			if (label) drawText(label, player.x, player.y + 51, 12, '#193047');
+			if (player.moving && Math.floor(time / 170) % 2 === 0) { ctx.fillStyle = 'rgba(255,255,255,.4)'; ctx.fillRect(player.x - 26, player.y + 29, 7, 3); }
+		}
+
+		function renderPanel() {
+			ui.score.textContent = `${getSafetyScore()} / 400`;
+			ui.skipHome.classList.toggle('hidden', !['homeTutorial', 'homeMother', 'homeExit'].includes(state.opening));
+			if (state.opening.startsWith('home')) {
+				const tutorialProgress = isTouchDevice ? (state.tutorialRotation / (Math.PI * 2)) * 100 : Object.values(state.tutorialDirectionTimes).reduce((total, duration) => total + duration, 0) / 6 * 100;
+				ui.progress.style.width = state.tutorialStep === 'move' ? `${tutorialProgress}%` : '0%';
+				ui.step.textContent = state.opening === 'homeTutorial' ? 'LÀM QUEN · Ở NHÀ' : state.opening === 'homeMother' ? 'BUỔI SÁNG · TRÒ CHUYỆN VỚI MẸ' : 'SẴN SÀNG ĐI HỌC';
+				ui.title.textContent = state.opening === 'homeMother' ? 'Mẹ gọi An đi học' : state.opening === 'homeExit' ? 'Ra cửa để đến trường' : 'Tập di chuyển';
+				ui.speaker.textContent = state.opening === 'homeMother' ? 'Mẹ · phụ huynh' : 'An · độc thoại';
+				if (state.opening === 'homeTutorial' && state.tutorialStep === 'move') {
+					ui.text.textContent = isTouchDevice
+						? `Giữ nút di chuyển và xoay đủ 360° để làm quen. (${Math.min(100, Math.floor(tutorialProgress))}%)`
+						: `Giữ từng hướng WASD hoặc phím mũi tên ít nhất 1,5 giây. Đã hoàn thành: ${state.tutorialDirections.size}/4 hướng.`;
+				}
+				else if (state.opening === 'homeMother' && !state.active) ui.text.textContent = distance(player, motherActor) < 76 ? 'Nhấn E để trò chuyện với Mẹ.' : 'Đi đến gần Mẹ rồi nhấn E để trò chuyện.';
+				else if (state.opening === 'homeExit') ui.text.textContent = distance(player, homeDoor) < 76 ? 'Nhấn E để mở cửa và đi đến trường.' : 'Đi đến cánh cửa bên trái rồi nhấn E.';
+				return;
+			}
+			if (state.epilogue) {
+				const epilogueLabels = {
+					checkpointDiscipline: 'ĐÁNH GIÁ · 7 NGÀY ĐẦU',
+					disciplineBadEnding: 'KẾT THÚC · BAD ENDING',
+					checkpointEvaluation: 'ĐÁNH GIÁ · 7 NGÀY ĐẦU',
+					walkHome: 'TRÊN ĐƯỜNG VỀ NHÀ',
+					nightChoice: 'HẺM CỤT · CHỌN CÁCH XỬ LÝ',
+					chaseAlley1: 'RƯỢT ĐUỔI · HẺM 1 / 3',
+					chaseAlley2: 'RƯỢT ĐUỔI · HẺM 2 / 3',
+					chaseAlley3: 'HẺM CỤT · HẺM 3 / 3',
+					alleyPolice: 'CỐT TRUYỆN ẨN · CON HẺM',
+					gateEnding: 'TRỞ LẠI CỔNG TRƯỜNG'
+				};
+				ui.step.textContent = epilogueLabels[state.epilogue] || 'TÌNH HUỐNG ĐẶC BIỆT · NHÀ VỆ SINH';
+				ui.progress.style.width = state.epilogue === 'checkpointDiscipline' || state.epilogue === 'disciplineBadEnding' ? '70%' : state.epilogue === 'safe' ? '100%' : '0%';
+				if (state.epilogue !== 'checkpointEvaluation') ui.continue.classList.add('hidden');
+				if (state.epilogue === 'outside') {
+					const nearDoor = distance(player, restroomEntry) < 76;
+					ui.title.textContent = 'Trước cửa nhà vệ sinh';
+					ui.speaker.textContent = 'An · học sinh';
+					ui.text.textContent = nearDoor ? 'Nhấn E để bước vào nhà vệ sinh.' : 'Đi đến cánh cửa bên phải và nhấn E để bước vào.';
+				} else if (state.epilogue === 'hallway') {
+					ui.title.textContent = 'Hành lang đến lớp';
+					ui.speaker.textContent = 'An · học sinh';
+					ui.text.textContent = distance(player, classroomDoor) < 76 ? 'Nhấn E để bước vào lớp 8A.' : 'Đi dọc hành lang đến cửa lớp 8A và nhấn E để vào.';
+				} else if (state.epilogue === 'classroom') {
+					ui.title.textContent = 'Trong lớp 8A';
+					ui.speaker.textContent = 'An · học sinh';
+					ui.text.textContent = distance(player, classroomPaper) < 76 ? 'Bạn thấy một tờ giấy trên bàn. Nhấn E để đọc.' : 'Đi đến bàn học có tờ giấy ở giữa lớp.';
+				} else if (state.epilogue === 'paperRead') {
+					ui.title.textContent = 'Lời nhắn trên giấy';
+					ui.speaker.textContent = 'Tờ giấy';
+					ui.text.textContent = '“Tụi tao đã biết mày đã giúp thằng Minh, tối nay mày phải gặp mặt bọn tao ở con hẻm tối phía sau trường nếu như mày không muốn chết.”';
+				} else if (state.epilogue === 'checkpointEvaluation') {
+					ui.title.textContent = 'Đánh giá 7 ngày đầu';
+					ui.speaker.textContent = 'Người kể chuyện';
+					ui.text.textContent = 'Bạn đã đạt từ 300 đến 350 điểm. Hãy tiếp tục hành trình với tình huống đặc biệt.';
+				} else if (state.epilogue === 'walkHome') {
+					ui.title.textContent = 'Trên đường về nhà';
+					ui.speaker.textContent = 'An · độc thoại';
+					ui.text.textContent = 'Trên đường về nhà, lời đe dọa trong tờ giấy cứ hiện lên trong đầu An. Mình có nên đến con hẻm tối phía sau trường không?';
+				} else if (state.epilogue === 'classQuiz') {
+					ui.title.textContent = 'Lời hẹn ở khu tối';
+					ui.speaker.textContent = 'An · học sinh';
+					ui.text.textContent = 'Sau khi đọc lời đe dọa hẹn gặp ở con hẻm tối phía sau trường, bạn nên làm gì để bảo vệ mình và Minh?';
+				} else if (state.epilogue === 'classDone') {
+					ui.title.textContent = 'Tình huống trong lớp đã kết thúc';
+					ui.speaker.textContent = 'An · học sinh';
+					ui.text.textContent = 'Hãy lắng nghe bạn, tôn trọng cảm xúc của bạn ấy và nhờ giáo viên đáng tin hỗ trợ khi cần.';
+				} else if (state.epilogue === 'checkpointDiscipline') {
+					ui.title.textContent = 'Phòng giám thị · Đánh giá 7 level đầu';
+					ui.speaker.textContent = 'Thầy Dũng · giám thị';
+					ui.text.textContent = '“Tại sao mày lại hại các bạn học trong trường này! Lập tức kêu phụ huynh đến và nhận giấy thôi học trên phòng giám thị vào 9 giờ sáng mai và ngay lập tức gọi phụ huynh đến đón về!”';
+				} else if (state.epilogue === 'disciplineBadEnding') {
+					ui.title.textContent = 'BAD ENDING';
+					ui.speaker.textContent = 'BAD ENDING · Thầy Dũng';
+					ui.text.textContent = 'Câu trả lời của bạn đã kết thúc trò chơi. Bảng điểm 7 ngày đầu được hiển thị bên dưới.';
+				} else if (state.epilogue === 'nightChoice') {
+					ui.title.textContent = 'Hẻm cụt phía sau trường';
+					ui.speaker.textContent = 'An · học sinh';
+					ui.text.textContent = 'An bị dồn vào góc tường, bọn bắt nạt đang áp sát. Hãy chọn cách gọi trợ giúp.';
+				} else if (['chaseAlley1', 'chaseAlley2', 'chaseAlley3'].includes(state.epilogue)) {
+					ui.title.textContent = `Bọn bắt nạt đuổi theo · Hẻm ${state.alleyStage} / 3`;
+					ui.speaker.textContent = 'An · học sinh';
+					ui.text.textContent = state.alleyStage < 3
+						? 'Chạy về phía lối ra để thoát khỏi bọn bắt nạt!'
+						: 'Đây là hẻm cụt. An đứng sát góc tường và không thể chạy tiếp.';
+				} else if (state.epilogue === 'alleyPolice') {
+					ui.title.textContent = 'Đối mặt tại điểm hẹn';
+					ui.speaker.textContent = 'Người kể chuyện';
+					ui.text.textContent = 'An đến điểm hẹn cùng công an. Hãy bình tĩnh và làm theo hướng dẫn.';
+				} else if (state.epilogue === 'gateEnding') {
+					ui.title.textContent = 'Ngày bình yên ở trường';
+					ui.speaker.textContent = 'An · độc thoại';
+					ui.text.textContent = 'Cuối cùng thì mình cũng đã có được một cuộc sống yên bình trong những ngày ở ngôi trường chứa đầy khát vọng này rồi!';
+				} else if (state.epilogue === 'quiz') {
+					ui.title.textContent = 'Bị nhóm học sinh chặn lại';
+					ui.speaker.textContent = 'Nhóm học sinh';
+					ui.text.textContent = 'Bốn học sinh chắn lối ra và gây áp lực. Bạn cần chọn cách xử lý để đến nơi an toàn.';
+				} else if (state.epilogue === 'escape') {
+					ui.title.textContent = 'Tìm đường ra nơi an toàn';
+					ui.speaker.textContent = 'An · học sinh';
+					ui.text.textContent = distance(player, restroomExit) < 76 ? 'Nhấn E tại cửa để thoát ra hành lang an toàn.' : 'Bạn đã tạo được cơ hội. Di chuyển đến cửa bên trái và nhấn E để thoát.';
+				} else if (state.epilogue === 'safe') {
+					ui.title.textContent = 'Đã thoát đến nơi an toàn';
+					ui.speaker.textContent = 'An · học sinh';
+					ui.text.textContent = 'Bạn đã rời khỏi nhà vệ sinh an toàn. Hãy báo giáo viên hoặc người lớn đáng tin về sự việc.';
+				} else {
+					ui.title.textContent = 'Tình huống kết thúc';
+				}
+				return;
+			}
+			if (state.intro) {
+				ui.step.textContent = 'MỞ ĐẦU · TRƯỚC CỔNG TRƯỜNG';
+				ui.title.textContent = 'Cổng trường';
+				ui.progress.style.width = '0%';
+				ui.speaker.textContent = 'An · học sinh';
+				ui.text.textContent = !state.paperSamplesCollected
+					? distance(player, { x: 150, y: 284 }) < 94
+						? 'Nhấn E để lưu giữ các mẫu giấy trên bảng thông tin trước khi vào trường.'
+						: 'Hãy đến bảng thông tin ở bên trái để lưu giữ mẫu giấy trước khi vào trường.'
+					: distance(player, schoolGate) < 76 ? 'Nhấn E để đi qua cổng trường.' : 'Hãy đi đến cổng trường và nhấn E để vào.';
+				return;
+			}
+			if (state.route === 'bad') {
+				const routeScene = badRoute[state.routeStep];
+				ui.step.textContent = `NGÀY ${routeScene.day} / 7 · LỐI ĐI TIÊU CỰC · NHỮNG CUNG ĐƯỜNG MẤT MÁT · ${state.routeStep + 1} / ${badRoute.length}`;
+				ui.title.textContent = routeScene.title;
+				ui.progress.style.width = `${((state.routeStep + 1) / badRoute.length) * 100}%`;
+				return;
+			}
+			if (state.route === 'evaluation') {
+				ui.step.textContent = 'KẾT THÚC · NHỮNG CUNG ĐƯỜNG MẤT MÁT';
+				ui.title.textContent = 'Những Cung Đường Mất Mát';
+				ui.progress.style.width = '100%';
+				return;
+			}
+			if (state.route === 'discipline') {
+				ui.step.textContent = 'NGÀY 7 · PHÒNG GIÁM THỊ';
+				ui.title.textContent = 'Buổi làm việc với thầy giám thị';
+				ui.progress.style.width = '98%';
+				return;
+			}
+			const scene = scenes[state.scene];
+			ui.step.textContent = state.scene >= tenLevelSceneCount ? 'HOÀN THÀNH 10 LEVEL' : `LEVEL ${scene.level} / 10 · NGÀY ${scene.day} · TÌNH HUỐNG ${state.scene % 2 + 1} / 2`;
+			ui.title.textContent = state.scene < tenLevelSceneCount ? (scene.useRawChoices ? scene.title : `${scene.levelTitle}: ${scene.title}`) : 'Hành trình đã hoàn tất';
+			ui.progress.style.width = `${((state.scene + (state.scene < tenLevelSceneCount ? state.phase * .5 : 0)) / tenLevelSceneCount) * 100}%`;
+			if (!state.active) {
+				if (state.scene >= tenLevelSceneCount) return;
+				const npc = nearNpc();
+				if (state.paperReadScene !== state.scene) {
+					ui.speaker.textContent = 'An · học sinh';
+					ui.text.textContent = 'Nhấn E để lấy mảnh giấy đã xé trong túi áo và đọc trước khi tiếp tục.';
+				} else {
+					ui.speaker.textContent = npc ? `${npc.name} · ${npc.label.toLowerCase()}` : 'An · học sinh';
+					ui.text.textContent = npc ? '💬 [E] Nói chuyện' : `Đã xem mảnh giấy. Hãy đến gần ${npcNames[state.scene][0]} rồi nhấn E.`;
+				}
+			}
+		}
+
+		function startDialogue() {
+			const npc = nearNpc(); if (!state.started || !npc || state.active || state.transitioning || state.scene >= tenLevelSceneCount) return;
+			if (state.paperReadScene !== state.scene) return;
+			state.intro = false;
+			state.active = true; state.answered = false;
+			const scene = scenes[state.scene];
+			const speakerRole = scene.speaker.split(' · ').slice(1).join(' · ');
+			ui.speaker.textContent = speakerRole ? `${npc.name} · ${speakerRole}` : npc.name;
+			ui.feedback.textContent = '';
+			if (scene.dialogue) {
+				state.dialogueIndex = 0;
+				state.waitingForSceneAdvance = false;
+				ui.choices.innerHTML = '';
+				ui.speaker.textContent = scene.dialogue[0][0];
+				ui.text.textContent = scene.dialogue[0][1];
+				ui.next.textContent = 'Tiếp tục hội thoại';
+				ui.next.classList.remove('hidden');
+			} else {
+				ui.text.textContent = `An: Mình nên làm gì để giúp ${npc.name} và đảm bảo bạn ấy được an toàn?`;
+				renderChoices(scene.choices);
+				ui.next.classList.add('hidden');
+			}
+			renderPanel();
+		}
+
+		function npcNameForScene(scene) { return scene.speaker.split(' · ')[0]; }
+
+		function createLevelOneResponse(scene, choiceIndex) {
+			const name = npcNameForScene(scene);
+			const lines = [];
+			if ((scene === scenes[0] && choiceIndex === 2) || (scene === scenes[1] && choiceIndex === 1)) {
+				lines.push([name, 'Cảm ơn bạn nhiều nha!']);
+			}
+			if (scene === scenes[0]) {
+				lines.push(
+					['Minh', 'Hiện tại mình chỉ đang bị các bạn khác gọi bằng biệt danh là "Nhím" thôi à, không có gì quá nghiêm trọng đâu.'],
+					['An', 'Tại sao mọi người lại quá đáng như vậy chứ? Bộ tụi bây không biết làm như vậy thì người khác sẽ khó chịu lắm hả!'],
+					['Người kể chuyện', 'Các bạn cười lớn thẳng vào mặt An và vẫn gọi Minh bằng biệt danh đó mặc dù An đã cảnh báo các bạn không nên.'],
+					['An · nói thầm', 'Không ổn rồi, mình phải làm sao đây!']
+				);
+			} else {
+				lines.push(
+					['Vy', 'Hiện tại các bạn chỉ đang giỡn với mình thôi à, không có gì quá nghiêm trọng đâu.'],
+					['An', 'Tại sao mọi người lại quá đáng như vậy chứ? Bộ tụi bây không biết làm như vậy thì người khác sẽ khó chịu lắm hả!'],
+					['Người kể chuyện', 'Các bạn cười lớn thẳng vào mặt An và vẫn xúc phạm Vy mặc dù An đã cảnh báo các bạn không nên.'],
+					['An · nói thầm', 'Không ổn rồi, mình phải làm sao đây!']
+				);
+			}
+			return lines;
+		}
+
+		const scenarioStories = {
+			2: { response: 'Mình bị các bạn gạt khỏi nhóm làm bài và nói không ai muốn chơi cùng. Mình buồn nhưng không biết phải nói sao.', issue: 'cô lập Quân và loại bạn ấy khỏi nhóm', persistence: 'vẫn gạt Quân khỏi nhóm và không cho bạn ấy ngồi cùng' },
+			3: { response: 'Hộp bút của mình bị giấu, vở còn bị xé và đồ dùng bị ném đi. Mình thấy lo nhưng không biết ai đã làm.', issue: 'giấu và làm hỏng đồ dùng của Hà', persistence: 'tiếp tục trêu Hà và phủ nhận chuyện làm hỏng đồ dùng' },
+			4: { response: 'Họ cứ rủ mình đua xe rồi hẹn gặp ở con hẻm. Mình thấy không an toàn nhưng sợ bị cô lập nếu từ chối.', issue: 'ép Lan tham gia cuộc đua xe nguy hiểm', persistence: 'vẫn gây áp lực, rủ Lan đến con hẻm và xem nhẹ nguy hiểm' },
+			5: { response: 'Trong nhóm chat, mọi người đang gửi ảnh chế xúc phạm một bạn vắng mặt. Mình không biết làm sao để chuyện đó dừng lại.', issue: 'dùng ảnh chế để chế giễu bạn trong nhóm chat', persistence: 'vẫn gửi ảnh chế và cười nhạo bạn ấy trong nhóm chat' },
+			6: { response: 'Ảnh của mình bị chia sẻ trong nhóm lớp. Mình xấu hổ và lo mọi người sẽ tiếp tục chuyền ảnh.', issue: 'chia sẻ ảnh của Vy khi chưa được bạn ấy đồng ý', persistence: 'vẫn chuyền ảnh của Vy dù bạn ấy đã yêu cầu dừng lại' },
+			7: { response: 'Mình không rõ chiếc chìa khóa dùng làm gì, nhưng lại được nhờ giữ kín. Mình thấy lo vì không biết nó liên quan đến chuyện gì.', issue: 'gây áp lực để Quân giữ bí mật về chiếc chìa khóa không rõ nguồn gốc', persistence: 'vẫn yêu cầu Quân giữ kín chiếc chìa khóa mà không giải thích' },
+			8: { response: 'Các bạn chặn đường, giật cặp và ép mình xin lỗi dù mình không làm gì sai. Mình thấy sợ.', issue: 'chặn đường, giật cặp và ép bạn khác xin lỗi', persistence: 'vẫn chặn bạn ấy và giữ chiếc cặp' },
+			9: { response: 'Tin đồn nói mình lấy tiền của lớp đang lan ra. Chưa ai kiểm chứng nhưng mình sợ mọi người sẽ tin điều đó.', issue: 'lan truyền tin đồn chưa được kiểm chứng về Lan', persistence: 'vẫn nhắc lại tin đồn dù chưa có bằng chứng' },
+			10: { response: 'Mình sắp phải đi qua nơi nhóm đó thường đứng và lo sẽ gặp nguy hiểm. Mình cần biết nên tìm ai giúp.', issue: 'để Minh phải tự đi qua nơi có nguy cơ bị bắt nạt', persistence: 'vẫn xem nhẹ nỗi lo của Minh và không giúp bạn tìm cách đi an toàn' },
+			11: { response: 'Thông tin cá nhân của mình bị đăng kèm lời chế giễu. Mình lo mọi người sẽ tiếp tục chia sẻ.', issue: 'đăng thông tin cá nhân của Vy để chế giễu bạn ấy', persistence: 'vẫn để thông tin của Vy lan truyền kèm lời chế giễu' },
+			12: { response: 'Họ nói sẽ cô lập mình nếu mình không tham gia việc có thể vi phạm pháp luật. Mình không muốn làm nhưng sợ bị gây áp lực.', issue: 'đe dọa cô lập Quân để ép bạn tham gia việc trái pháp luật', persistence: 'vẫn gây áp lực và dọa cô lập Quân khi bạn từ chối' },
+			13: { response: 'Mình muốn quay lại sinh hoạt bình thường, nhưng chưa biết các bạn có thực sự hiểu việc đó đã làm mình tổn thương không.', issue: 'tiếp tục xem nhẹ những tổn thương Hà đã trải qua', persistence: 'vẫn nói đùa và không tôn trọng cảm xúc của Hà' },
+			14: { response: 'Một bạn đang bị giật sách và chặn lối đi. Mình muốn giúp nhưng cũng cần đảm bảo mọi người được an toàn.', issue: 'giật sách và chặn lối đi của bạn trong thư viện', persistence: 'vẫn chặn bạn ấy và giật sách dù đã được nhắc nhở' },
+			15: { response: 'Các bạn chiếm chỗ, làm đổ khay thức ăn rồi cười khi mình dọn. Mình thấy rất xấu hổ.', issue: 'chiếm chỗ và cố ý làm đổ khay thức ăn của Vy', persistence: 'vẫn cười nhạo Vy và không nhường chỗ' },
+			16: { response: 'Mình vừa bị xô ngã và đang ở phòng y tế. Một số bạn vẫn cười ở ngoài cửa khiến mình rất bất an.', issue: 'xô ngã Hà rồi tiếp tục cười cợt bên ngoài phòng y tế', persistence: 'vẫn cười cợt Hà dù bạn đang cần được chăm sóc' },
+			17: { response: 'Họ muốn mình ký tên vào danh sách đổ lỗi cho người khác. Mình không thấy việc đó đúng và đang cần người lớn giúp.', issue: 'ép Lan ký vào danh sách đổ lỗi cho người khác', persistence: 'vẫn ép Lan ký tên và đổ lỗi cho người khác' },
+			18: { response: 'Mình lo cuộc họp sẽ biến thành nơi chỉ trích người bị ảnh hưởng thay vì tìm cách ngăn chuyện này tái diễn.', issue: 'biến cuộc họp thành nơi chỉ trích người bị bắt nạt', persistence: 'vẫn đổ lỗi cho người bị ảnh hưởng thay vì cùng tìm giải pháp' },
+			19: { response: 'Mình muốn cả lớp biết cách gọi người hỗ trợ khi có nguy cơ, để không ai phải tự xoay xở một mình.', issue: 'xem nhẹ kế hoạch cùng bảo vệ nhau và gọi hỗ trợ', persistence: 'vẫn bỏ qua đề xuất gọi hỗ trợ khi có nguy cơ' }
+		};
+
+		function createScenarioStory(scene, choiceIndex) {
+			const name = npcNameForScene(scene);
+			const details = scenarioStories[state.scene];
+			if (!details) throw new Error(`Thiếu hội thoại cho tình huống ${state.scene + 1}: ${scene.title}`);
+			const lines = [];
+			const selected = scene.choices[choiceIndex];
+			const customResponse = scene.responses?.[choiceIndex];
+			if (customResponse) {
+				if (selected[1] >= 20 && !customResponse.reaction.startsWith('Cảm ơn')) {
+					lines.push([name, 'Cảm ơn bạn đã lắng nghe và muốn giúp mình.']);
+				}
+				lines.push([customResponse.speaker, customResponse.reaction]);
+			} else {
+				if (selected[1] >= 20) lines.push([name, 'Cảm ơn bạn đã lắng nghe và muốn giúp mình.']);
+				lines.push([name, details.response]);
+			}
+			lines.push(
+				['An · nói với các bạn', `Tại sao mọi người lại ${details.issue} như vậy? Làm thế sẽ khiến ${name} khó chịu hoặc không an toàn. Hãy dừng lại và tôn trọng bạn ấy!`],
+				['Người kể chuyện', `Các bạn vẫn ${details.persistence} mặc dù An đã khuyên mọi người dừng lại.`],
+				['An · nói thầm', 'Không ổn rồi, mình phải làm sao đây!']
+			);
+			return lines;
+		}
+
+		function showStoryLine() {
+			const [speaker, line] = state.storyLines[state.storyIndex];
+			ui.speaker.textContent = speaker;
+			ui.text.textContent = line;
+			ui.next.textContent = 'Tiếp tục';
+			ui.next.classList.remove('hidden');
+		}
+
+		function enterRestroom() {
+			state.epilogue = 'quiz'; state.active = true; state.answered = false;
+			player.x = 660; player.y = 355;
+			ui.feedback.textContent = '';
+			renderChoices([
+				choice('Đối chất trực tiếp với cả nhóm.', 0, 'Đối chất khi đang bị vây có thể làm nguy cơ tăng lên.'),
+				choice('Chờ cơ hội để đánh trả.', 0, 'Đánh trả có thể khiến bạn hoặc người khác bị thương.'),
+				choice('Đánh lạc hướng rồi chớp thời cơ chạy trốn đến nơi an toàn.', 20, 'Bạn tránh xô xát, tạo khoảng cách và chạy đến nơi có người lớn hỗ trợ.'),
+				choice('Nói rằng mình sẽ tìm giáo viên để giải quyết.', 0, 'Tìm giáo viên là cần thiết, nhưng trước hết hãy thoát khỏi nơi đang bị vây một cách an toàn.')
+			]);
+			renderPanel();
+		}
+
+		function showOpeningCutscene(label, className, duration, onComplete) {
+			clearTimeout(state.openingTimer);
+			state.active = true;
+			ui.transitionLabel.innerHTML = label;
+			ui.transition.classList.remove('objective-cutscene', 'rules-cutscene', 'mission-cutscene', 'tip-cutscene', 'gameplay-cutscene', 'tutorial-cutscene', 'title-card-cutscene');
+			ui.transition.classList.add(className, 'show');
+			ui.transition.setAttribute('aria-hidden', 'false');
+			state.openingTimer = setTimeout(() => {
+				ui.transition.classList.remove('show');
+				state.openingTimer = setTimeout(() => {
+					ui.transition.classList.remove(className);
+					ui.transition.setAttribute('aria-hidden', 'true');
+					state.openingTimer = null;
+					onComplete();
+				}, 450);
+			}, duration);
+		}
+
+		function showOpeningCutscenes(cutscenes, onComplete, index = 0) {
+			if (index >= cutscenes.length) {
+				state.skippingIntroduction = false;
+				ui.skipIntroduction.classList.add('hidden');
+				ui.continueIntroduction.classList.add('hidden');
+				onComplete();
+				return;
+			}
+			const [label, className, duration] = cutscenes[index];
+			showOpeningCutscene(label, className, duration, () => showOpeningCutscenes(cutscenes, onComplete, index + 1));
+		}
+
+		function showIntroductionScreen(cutscenes, index = 0) {
+			if (index >= cutscenes.length) {
+				state.skippingIntroduction = false;
+				ui.skipIntroduction.classList.add('hidden');
+				ui.continueIntroduction.classList.add('hidden');
+				ui.transition.classList.remove('show', 'objective-cutscene', 'rules-cutscene', 'mission-cutscene', 'tip-cutscene', 'gameplay-cutscene');
+				ui.transition.setAttribute('aria-hidden', 'true');
+				state.openingTimer = setTimeout(() => {
+					state.openingTimer = null;
+					beginHomeTutorial();
+				}, 450);
+				return;
+			}
+			const [label, className] = cutscenes[index];
+			state.active = true;
+			ui.transitionLabel.innerHTML = label;
+			ui.transition.classList.remove('objective-cutscene', 'rules-cutscene', 'mission-cutscene', 'tip-cutscene', 'gameplay-cutscene', 'tutorial-cutscene', 'title-card-cutscene');
+			ui.transition.classList.add(className, 'show');
+			ui.transition.setAttribute('aria-hidden', 'false');
+			ui.continueIntroduction.classList.remove('hidden');
+			ui.continueIntroduction.onclick = () => showIntroductionScreen(cutscenes, index + 1);
+		}
+
+		function skipGameIntroduction() {
+			if (!state.skippingIntroduction) return;
+			clearTimeout(state.openingTimer);
+			state.openingTimer = null;
+			state.skippingIntroduction = false;
+			ui.skipIntroduction.classList.add('hidden');
+			ui.continueIntroduction.classList.add('hidden');
+			ui.transition.classList.remove('show', 'objective-cutscene', 'rules-cutscene', 'mission-cutscene', 'tip-cutscene', 'gameplay-cutscene');
+			ui.transition.setAttribute('aria-hidden', 'true');
+			beginHomeTutorial();
+		}
+
+		function startGameIntroduction() {
+			releaseMobileStick();
+			state.started = true;
+			ui.startMenu.classList.add('hidden');
+			ui.menuStatus.textContent = '';
+			state.skippingIntroduction = true;
+			ui.skipIntroduction.classList.remove('hidden');
+			showIntroductionScreen([
+				['<strong>Mục tiêu</strong><span>Giúp người chơi hình thành kiến thức cơ bản, biết đưa ra lời khuyên và hỗ trợ người khác khi xảy ra bạo lực học đường, đồng thời lựa chọn cách ứng xử đúng đắn khi bản thân là nạn nhân.</span>', 'objective-cutscene'],
+				['<strong>📜 THỂ LỆ</strong><span>• Hoàn thành lần lượt các tình huống trong game.\n• Quan sát, suy nghĩ trước khi đưa ra lựa chọn.\n• Ưu tiên cách xử lý an toàn, không dùng bạo lực và tìm kiếm sự hỗ trợ khi cần.\n• Mỗi câu trả lời được cộng hoặc trừ điểm an toàn tương ứng.\n• Cố gắng đạt điểm an toàn cao nhất.</span>', 'rules-cutscene'],
+				['<strong>🏆 NHIỆM VỤ</strong><span>Nhận diện đúng – Lựa chọn an toàn – Hoàn thành hành trình!</span>', 'mission-cutscene'],
+				['<strong>Cách chơi</strong><span>• Dùng WASD hoặc phím mũi tên để di chuyển; trên điện thoại, giữ và xoay cần điều khiển.\n• Đi đến gần nhân vật có dấu chấm than rồi nhấn E hoặc nút tương tác để trò chuyện.\n• Đọc tình huống và chọn câu trả lời phù hợp để tiếp tục hành trình.</span>', 'gameplay-cutscene'],
+				['<strong>💡 LỜI KHUYÊN</strong><span>Không có lựa chọn hoàn hảo ngay từ đầu. Hãy suy nghĩ và học từ phản hồi sau mỗi tình huống.</span>', 'tip-cutscene']
+			]);
+		}
+
+		function openConfirmation(action) {
+			state.confirmationAction = action;
+			state.confirmationReturnFocus = document.activeElement;
+			ui.confirmMessage.textContent = action === 'quit'
+				? 'Bạn có chắc chắn rằng muốn thoát không?'
+				: 'Bạn có chắc chắn rằng muốn chơi lại từ đầu không?';
+			ui.confirmOverlay.classList.remove('hidden');
+			ui.confirmOverlay.setAttribute('aria-hidden', 'false');
+			ui.confirmNo.focus();
+		}
+
+		function closeConfirmation() {
+			state.confirmationAction = '';
+			ui.confirmOverlay.classList.add('hidden');
+			ui.confirmOverlay.setAttribute('aria-hidden', 'true');
+			if (state.confirmationReturnFocus?.isConnected) state.confirmationReturnFocus.focus();
+			state.confirmationReturnFocus = null;
+		}
+
+		function confirmAction() {
+			const action = state.confirmationAction;
+			closeConfirmation();
+			if (action === 'restart') {
+				returnToStartMenu();
+				return;
+			}
+			if (action === 'quit') {
+				state.started = false;
+				ui.startMenu.classList.remove('hidden');
+				window.close();
+				setTimeout(() => {
+					if (!window.closed) ui.menuStatus.textContent = 'Trình duyệt không cho phép tự đóng tab này. Bạn có thể đóng cửa sổ trình duyệt.';
+				}, 300);
+			}
+		}
+
+		function beginHomeTutorial() {
+			state.opening = 'homeTutorial';
+			state.tutorialStep = 'selfTalk';
+			state.tutorialDirections.clear();
+			state.tutorialDirectionTimes = { up: 0, down: 0, left: 0, right: 0 };
+			state.tutorialRotation = 0;
+			mobileInput.lastAngle = null;
+			player.x = 185; player.y = 355;
+			state.active = true;
+			ui.choices.innerHTML = '';
+			ui.speaker.textContent = 'An · độc thoại';
+			ui.text.textContent = 'Bạn hãy ấn nút WASD hoặc mũi tên để di chuyển.';
+			renderPanel();
+			state.openingTimer = setTimeout(() => {
+				state.tutorialStep = 'move';
+				state.active = false;
+				ui.feedback.textContent = 'Hãy thử di chuyển lên, xuống, trái và phải.';
+				renderPanel();
+			}, 3200);
+		}
+
+		function showInteractPrompt() {
+			state.tutorialStep = 'interactPrompt';
+			showOpeningCutscene('Ấn E để tương tác', 'tutorial-cutscene', 2200, () => {
+				state.opening = 'homeMother';
+				state.tutorialStep = 'talk';
+				state.active = false;
+				player.x = 250; player.y = 355;
+				ui.feedback.textContent = '';
+				renderPanel();
+			});
+		}
+
+		function playOpeningLines(lines, onComplete) {
+			let lineIndex = 0;
+			const showNextLine = () => {
+				if (lineIndex >= lines.length) {
+					state.active = false;
+					state.answered = false;
+					ui.choices.innerHTML = '';
+					state.opening = 'homeExit';
+					renderPanel();
+					onComplete?.();
+					return;
+				}
+				const [speaker, text] = lines[lineIndex++];
+				ui.speaker.textContent = speaker;
+				ui.text.textContent = text;
+				state.openingTimer = setTimeout(showNextLine, 4000);
+			};
+			state.active = true;
+			showNextLine();
+		}
+
+		function startMotherDialogue() {
+			if (state.active || state.opening !== 'homeMother' || distance(player, motherActor) >= 76) return;
+			state.active = true;
+			playOpeningLines([
+				['Mẹ', 'Con có biết bây giờ là mấy giờ rồi không?'],
+				['Mẹ', 'Mau thu dọn cặp xách rồi đi học lẹ lên rồi còn đi học kẻo muộn!']
+			], () => {
+				state.opening = 'homeMother';
+				state.active = true;
+				ui.text.textContent = 'Mẹ đang chờ An trả lời. Con sẽ nói gì?';
+				renderChoices([
+					choice('Dạ, con đi học liền đây ngay ạ!', 0, ''),
+					choice('Hôm nay con mệt lắm rồi mẹ ơi! Mẹ cho con nghỉ một buổi nha?', 0, '')
+				]);
+				renderPanel();
+			});
+		}
+
+		function answerMother(choiceText) {
+			ui.choices.innerHTML = '';
+			if (choiceText.startsWith('Dạ')) {
+				playOpeningLines([['Mẹ', 'Ừ, mau đi nhanh đi chứ sắp trễ rồi kìa con!']]);
+				return;
+			}
+			playOpeningLines([
+				['Mẹ', 'Con có biết mẹ với ba kiếm tiền cực khổ để cho con ăn học lắm không?'],
+				['Mẹ', 'Con nghĩ ba mẹ làm việc để đóng tiền học phí cho con sung sướng lắm à?'],
+				['Mẹ', 'Mau chóng vác cặp rồi đi đến trường mau lên!']
+			]);
+		}
+
+		function leaveHome(skipTutorial = false) {
+			if (skipTutorial) {
+				if (!['homeTutorial', 'homeMother', 'homeExit'].includes(state.opening)) return;
+				releaseMobileStick();
+			} else if (state.opening !== 'homeExit' || distance(player, homeDoor) >= 76) return;
+			state.opening = 'titleCard';
+			showOpeningCutscene('Những Ngày Tháng Học Đường', 'title-card-cutscene', 5000, () => {
+				state.opening = '';
+				state.intro = true;
+				state.introStartedAt = performance.now();
+				state.active = false;
+				player.x = 120; player.y = 355;
+				renderPanel();
+			});
+		}
+
+		function interact() {
+			if (!state.started || state.confirmationAction) return;
+			if (state.paperOpen) {
+				state.paperOpen = false;
+				state.paperReadScene = state.scene;
+				state.active = false;
+				ui.paperOverlay.classList.add('hidden');
+				setToast('Đã cất mảnh giấy. Bạn có thể di chuyển và trò chuyện với nhân vật.');
+				renderPanel();
+				return;
+			}
+			if (state.opening === 'homeMother') { startMotherDialogue(); return; }
+			if (state.opening === 'homeExit') { leaveHome(); return; }
+			if (state.intro) {
+				if (state.opening || state.skippingIntroduction || state.active) return;
+				if (!state.paperSamplesCollected) {
+					if (distance(player, { x: 150, y: 284 }) >= 94) {
+						setToast('Hãy đến gần bảng thông tin để lưu giữ mẫu giấy.');
+						return;
+					}
+					state.paperSamplesCollected = true;
+					setToast('Đã lưu giữ các mẫu giấy. Hãy đến cổng trường để bắt đầu.');
+					renderPanel();
+					return;
+				}
+				if (distance(player, schoolGate) < 76) {
+					state.intro = false; player.x = 190; player.y = 355;
+					setToast('Bạn đã vào trường. Hãy đọc mảnh giấy trước khi di chuyển.');
+					renderPanel(); return;
+				}
+				return;
+			}
+			if (!state.intro && !state.epilogue && !state.route && state.scene < tenLevelSceneCount && state.paperReadScene !== state.scene) {
+				const scene = scenes[state.scene];
+				const speakerName = npcNameForScene(scene);
+				const noteContent = scene.text.startsWith(`${speakerName} `) ? scene.text.slice(speakerName.length + 1) : scene.text;
+				ui.paperTitle.textContent = `${scene.levelTitle} · ${scene.title}`;
+				ui.paperContent.textContent = `${speakerName}: ${noteContent}`;
+				ui.paperOverlay.classList.remove('hidden');
+				state.paperOpen = true;
+				state.active = true;
+				ui.speaker.textContent = 'An · học sinh';
+				ui.text.textContent = 'An lấy mảnh giấy đã xé trong túi áo để đọc.';
+				return;
+			}
+			if (state.epilogue === 'outside' && distance(player, restroomEntry) < 76) { enterRestroom(); return; }
+			if (state.epilogue === 'escape' && distance(player, restroomExit) < 76) {
+				state.epilogue = 'hallway'; state.active = false; player.x = 120; player.y = 355; ui.choices.innerHTML = ''; ui.feedback.textContent = '';
+				renderPanel(); return;
+			}
+			if (state.epilogue === 'hallway' && distance(player, classroomDoor) < 76) { enterClassroom(); return; }
+			if (state.epilogue === 'classroom' && distance(player, classroomPaper) < 76) { readClassroomPaper(); return; }
+			startDialogue();
+		}
+
+		function enterClassroom() {
+			state.epilogue = 'classroom'; state.active = false; state.answered = false;
+			player.x = 180; player.y = 355;
+			ui.choices.innerHTML = ''; ui.feedback.textContent = '';
+			renderPanel();
+		}
+
+		function readClassroomPaper() {
+			state.epilogue = 'paperRead'; state.active = true; state.answered = false;
+			ui.choices.innerHTML = ''; ui.feedback.textContent = '';
+			ui.next.classList.add('hidden');
+			renderPanel();
+			let secondsRemaining = 10;
+			ui.feedback.textContent = `Đọc kỹ lời nhắn. Câu hỏi sẽ xuất hiện sau ${secondsRemaining} giây.`;
+			state.paperTimer = setInterval(() => {
+				secondsRemaining--;
+				if (secondsRemaining <= 0) {
+					clearInterval(state.paperTimer);
+					state.paperTimer = null;
+					startClassroomQuiz();
+					return;
+				}
+				ui.feedback.textContent = `Đọc kỹ lời nhắn. Câu hỏi sẽ xuất hiện sau ${secondsRemaining} giây.`;
+			}, 1000);
+		}
+
+		function startClassroomQuiz() {
+			state.epilogue = 'classQuiz'; state.active = true; state.answered = false;
+			ui.feedback.textContent = '';
+			renderChoices([
+				choice('Đến điểm hẹn ở con hẻm tối để tìm hiểu lời đe dọa.', 0, 'Lời hẹn dẫn đến một tình huống mới; hãy cân nhắc cách đi an toàn.'),
+				choice('Vứt tờ giấy, phớt lờ lời đe dọa và không báo cho ai.', 0, 'Khi không giữ lời nhắn hoặc báo người lớn, bạn không có hỗ trợ để lập kế hoạch an toàn.'),
+				choice('Giữ tờ giấy, báo giáo viên và giám thị; cùng người lớn đến khu vực được giám sát để tìm hiểu sự thật.', 20, 'Bạn chủ động tìm hiểu sự thật cùng người có trách nhiệm, giữ bằng chứng và không vào hẻm một mình.')
+			]);
+			renderPanel();
+		}
+
+		function setEndingMessage(message) {
+			const [heading, ...noteLines] = message.split('\n');
+			const title = document.createElement('strong');
+			title.textContent = noteLines.length ? heading : '';
+			title.hidden = !noteLines.length;
+			const note = document.createElement('span');
+			note.textContent = noteLines.length ? noteLines.join('\n') : heading;
+			const messageElement = document.getElementById('escapeFailMessage');
+			messageElement.replaceChildren(title, note);
+		}
+
+		function failRestroomScenario() {
+			state.epilogue = 'failed'; state.active = true; ui.choices.innerHTML = ''; ui.feedback.textContent = '';
+			setEndingMessage('BAD ENDING\nNỗi Đau Bị Giấu Kín');
+			document.getElementById('returnMenuBtn').textContent = 'Chơi lại từ đầu';
+			ui.escapeFail.classList.remove('good-ending', 'safe-ending', 'bad-ending', 'true-ending');
+			ui.escapeFail.classList.add('bad-ending');
+			ui.escapeFail.classList.remove('hidden');
+		}
+
+		function returnToStartMenu() {
+			reset(); state.started = false; state.epilogue = '';
+			setEndingMessage('Chúc bạn đưa ra cư xử khôn ngoan hơn để trốn thoát khỏi đám đông khi bị bắt nạt lần sau!');
+			document.getElementById('returnMenuBtn').textContent = 'Về menu chính';
+			ui.escapeFail.classList.add('hidden'); ui.startMenu.classList.remove('hidden'); ui.menuStatus.textContent = ''; document.body.classList.remove('game-fullscreen');
+		}
+
+		function showScenarioEnding(epilogue, message, buttonLabel, theme) {
+			if (state.checkpointTimer) clearTimeout(state.checkpointTimer);
+			state.checkpointTimer = null;
+			state.epilogue = epilogue; state.active = true; state.answered = true; state.transitioning = false;
+			ui.choices.innerHTML = ''; ui.feedback.textContent = '';
+			setEndingMessage(message);
+			document.getElementById('returnMenuBtn').textContent = buttonLabel;
+			ui.escapeFail.classList.remove('good-ending', 'safe-ending', 'bad-ending', 'true-ending');
+			ui.escapeFail.classList.add(theme);
+			ui.escapeFail.classList.remove('hidden');
+		}
+
+		function showGoodEnding() {
+			const positiveChoices = state.outcomes.filter(outcome => outcome.points >= 15).length;
+			const recordedChoices = state.outcomes.length;
+			const progressNote = recordedChoices
+				? `Trong ${recordedChoices} lựa chọn được ghi nhận, có ${positiveChoices} lựa chọn thể hiện sự đồng cảm, trung thực hoặc tìm kiếm hỗ trợ.`
+				: 'Bạn đã biết giữ bằng chứng và tìm người lớn đáng tin thay vì tự đối mặt với lời đe dọa.';
+			showScenarioEnding('goodEnding', `GOOD ENDING\nBạn đã kiên trì đi qua các tình huống và chủ động tìm sự hỗ trợ phù hợp. ${progressNote}\nHãy tiếp tục giữ bình tĩnh, tôn trọng người khác và bảo vệ sự an toàn của mình.`, 'Chơi lại từ đầu', 'good-ending');
+		}
+
+		function renderCheckpointEvaluation(checkpointScore) {
+			state.epilogue = 'checkpointEvaluation'; state.active = true; state.answered = true;
+			renderPanel();
+			ui.score.textContent = `${checkpointScore} / 400`;
+			const rating = checkpointScore >= 351 ? 'Xuất sắc' : 'Đạt yêu cầu';
+			const message = checkpointScore >= 351
+				? 'Bạn đã thể hiện nhiều lựa chọn an toàn, biết tôn trọng và tìm kiếm hỗ trợ phù hợp.'
+				: 'Bạn đã đạt yêu cầu để mở tình huống đặc biệt. Hãy tiếp tục ưu tiên an toàn và tìm người lớn đáng tin.';
+			ui.summary.innerHTML = `<h3>Đánh giá 10 level đầu</h3><p><strong>${rating} · ${checkpointScore} / 400 điểm</strong><br>${message}</p>${scoreTableMarkup()}`;
+			ui.summary.classList.remove('hidden');
+			ui.continue.textContent = 'Vào tình huống đặc biệt';
+			ui.continue.classList.remove('hidden');
+		}
+
+		function scoreTableMarkup() {
+			return `<table><thead><tr><th>Level</th><th>Tình huống và lựa chọn</th><th>Điểm</th></tr></thead><tbody>${state.outcomes.map(outcome => {
+				const evaluation = outcome.points >= 15 ? 'An toàn' : 'Cần luyện thêm';
+				const resultClass = outcome.points >= 15 ? 'positive' : 'needs-care';
+				return `<tr><td>${outcome.level}</td><td><strong>${outcome.title}</strong>${outcome.action}<br><span>${outcome.feedback}</span></td><td class="score-cell">${outcome.points} / 20<br><span class="${resultClass}">${evaluation}</span></td></tr>`;
+			}).join('')}</tbody></table>`;
+		}
+
+		function showSafeEnding() {
+			showScenarioEnding('safeEnding', 'SAFE ENDING\nAn quyết định không đến điểm hẹn. An ở nơi an toàn, giữ lại lời nhắn và báo người lớn đáng tin để cùng xử lý.\nBạn đã ưu tiên an toàn và không để lời đe dọa buộc mình phải đi vào nơi vắng.', 'Chơi lại từ đầu', 'safe-ending');
+		}
+
+		function enterWalkHomeChoice() {
+			ui.escapeFail.classList.add('hidden');
+			ui.escapeFail.classList.remove('good-ending', 'safe-ending', 'bad-ending', 'true-ending');
+			state.epilogue = 'walkHome'; state.active = false; state.answered = false;
+			player.x = 370; player.y = 355;
+			renderChoices([
+				choice('Không đi đến con hẻm; ở nhà an toàn và tiếp tục nhờ người lớn hỗ trợ.', 20, 'An quyết định không đến điểm hẹn và tiếp tục ở nơi an toàn.'),
+				choice('Đi đến điểm hẹn ở con hẻm phía sau trường.', 0, 'An quyết định đến điểm hẹn; cần chọn cách đi an toàn.')
+			]);
+			renderPanel();
+		}
+
+		function startAlleyChase() {
+			state.alleyStage = 1;
+			state.epilogue = 'chaseAlley1'; state.active = false; state.answered = false;
+			player.x = 65; player.y = 355; player.facing = 1;
+			ui.choices.innerHTML = ''; ui.feedback.textContent = ''; ui.next.classList.add('hidden');
+			renderPanel();
+			setToast('Chạy sang phải qua hẻm 1; khi đến lối ra sẽ tự chuyển sang hẻm tiếp theo.');
+		}
+
+		function advanceAlleyChase() {
+			if (state.alleyStage < 3) {
+				state.alleyStage++;
+				state.epilogue = `chaseAlley${state.alleyStage}`;
+				player.x = 55;
+				player.y = 355;
+				player.facing = 1;
+				renderPanel();
+				setToast(`Đã sang hẻm ${state.alleyStage}. Tiếp tục chạy đến lối ra.`);
+				return;
+			}
+			state.epilogue = 'nightChoice'; state.active = true; state.answered = false;
+			player.x = 650; player.y = 355;
+			ui.choices.innerHTML = ''; ui.feedback.textContent = '';
+			renderPanel();
+			renderChoices([
+				choice('Gọi công an, báo rõ vị trí và làm theo hướng dẫn của họ.', 20, 'Bạn đã chọn nhờ lực lượng chức năng hỗ trợ.'),
+				choice('Tự lao qua nhóm bắt nạt để tìm đường thoát.', 0, 'Tự đối đầu có thể khiến bạn bị thương.'),
+				choice('Quay lại đối đầu và thách thức nhóm bắt nạt.', 0, 'Đối đầu có thể khiến nguy hiểm tăng lên.')
+			]);
+			setToast('Hẻm cụt! Chọn cách xử lý để được an toàn.');
+		}
+
+		function startPoliceAlleyStory() {
+			state.epilogue = 'alleyPolice'; state.active = true; state.answered = true;
+			state.policeArrivalProgress = 0; state.policeDialogueStarted = false;
+			state.policeArrestProgress = 0; state.policeArrestStarted = false;
+			player.x = 650; player.y = 355;
+			ui.choices.innerHTML = ''; ui.feedback.textContent = '';
+			renderPanel();
+			const dialogue = [
+				['An', 'Tụi em đã báo công an và sẽ đứng ở nơi an toàn, làm theo hướng dẫn.'],
+				['Huy', 'Mày còn dám dẫn công an đến đây à?'],
+				['Tú', 'Đừng để chúng đi! Xông lên!'],
+				['Người kể chuyện', 'Nhóm bắt nạt tức giận lao về phía An, nhưng công an lập tức bước lên ngăn lại trước khi ai bị thương.'],
+				['Công an', 'Công an đây! Dừng lại, bỏ tay xuống và đứng yên!'],
+				['Công an', 'Các em đang bị khống chế. Hãy hợp tác để chúng tôi đưa các em về phường làm việc. Gia đình và nhà trường sẽ được thông báo theo quy định.'],
+				['Người kể chuyện', 'Nhóm bắt nạt bị khống chế và áp giải về phường. Công an bảo đảm mọi người an toàn, tiếp nhận lời khai và phối hợp với gia đình cùng nhà trường.']
+			];
+			function showDialogueLine(index) {
+				if (state.epilogue !== 'alleyPolice') return;
+				if (index >= dialogue.length) {
+					state.epilogue = 'gateEnding';
+					player.x = 370; player.y = 355;
+					renderPanel();
+					state.checkpointTimer = setTimeout(() => {
+						state.checkpointTimer = null;
+						if (state.epilogue !== 'gateEnding') return;
+						showScenarioEnding('trueEnding', 'TRUE ENDING\nNhững Sứ Mệnh Cao Cả', 'Chơi lại từ đầu', 'true-ending');
+					}, 3600);
+					return;
+				}
+				if (index === 4) state.policeArrestStarted = true;
+				ui.speaker.textContent = dialogue[index][0];
+				ui.text.textContent = dialogue[index][1];
+				state.checkpointTimer = setTimeout(() => {
+					state.checkpointTimer = null;
+					showDialogueLine(index + 1);
+				}, 3000);
+			}
+			state.checkpointTimer = setTimeout(() => {
+				state.checkpointTimer = null;
+				if (state.epilogue === 'alleyPolice') {
+					state.policeArrivalProgress = 1;
+					state.policeDialogueStarted = true;
+					showDialogueLine(0);
+				}
+			}, 1500);
+		}
+
+		function handleEndingAction() {
+			if (state.epilogue === 'goodEnding') { enterWalkHomeChoice(); return; }
+			returnToStartMenu();
+		}
+
+		function renderChoices(choices) {
+			const displayed = choices.map((choice, originalIndex) => ({ choice, originalIndex }));
+			const rawChoices = scenes[state.scene]?.useRawChoices;
+			if (!rawChoices) {
+				for (let index = displayed.length - 1; index > 0; index--) {
+					const swapIndex = Math.floor(Math.random() * (index + 1));
+					[displayed[index], displayed[swapIndex]] = [displayed[swapIndex], displayed[index]];
+				}
+			}
+			const maxPoints = Math.max(...choices.map(choice => choice[1]));
+			if (!rawChoices && maxPoints >= 15 && state.correctPositionStreak >= 3) {
+				const correctIndex = displayed.findIndex(entry => entry.choice[1] === maxPoints);
+				if (correctIndex === state.lastCorrectPosition) {
+					const otherIndex = (correctIndex + 1 + Math.floor(Math.random() * (displayed.length - 1))) % displayed.length;
+					[displayed[correctIndex], displayed[otherIndex]] = [displayed[otherIndex], displayed[correctIndex]];
+				}
+			}
+			if (!rawChoices && maxPoints >= 15) {
+				const correctIndex = displayed.findIndex(entry => entry.choice[1] === maxPoints);
+				state.correctPositionStreak = correctIndex === state.lastCorrectPosition ? state.correctPositionStreak + 1 : 1;
+				state.lastCorrectPosition = correctIndex;
+			}
+			state.displayedChoices = displayed;
+			ui.choices.innerHTML = displayed.map(({ choice }, i) => {
+				const choiceText = state.opening === 'homeMother' || rawChoices ? choice[0] : `An sẽ ${choice[0].charAt(0).toLowerCase()}${choice[0].slice(1).replace(/[.!?]+$/, '')}.`;
+				return `<button class="choice" data-index="${i}"><b>${String.fromCharCode(65 + i)}</b> ${choiceText}</button>`;
+			}).join('');
+			ui.choices.querySelectorAll('.choice').forEach(button => button.addEventListener('click', () => answer(Number(button.dataset.index))));
+		}
+
+		function answer(index) {
+			if (state.answered) return;
+			state.answered = true;
+			const displayedChoice = state.displayedChoices[index];
+			if (!displayedChoice) return;
+			const originalIndex = displayedChoice.originalIndex;
+			if (state.opening === 'homeMother') { answerMother(displayedChoice.choice[0]); return; }
+			if (state.epilogue === 'quiz') {
+				const selected = displayedChoice.choice;
+				ui.choices.querySelectorAll('.choice').forEach((button, choiceIndex) => {
+					button.disabled = true;
+					if (choiceIndex === index) button.classList.add(selected[1] === 20 ? 'correct' : 'wrong');
+				});
+				state.answered = true;
+				if (selected[1] === 20) {
+					state.epilogue = 'escape'; state.active = false; ui.choices.innerHTML = '';
+					ui.feedback.textContent = `${selected[2]} (+${selected[1]} điểm)`;
+				} else {
+					failRestroomScenario();
+				}
+				renderPanel();
+				return;
+			}
+			if (state.epilogue === 'classQuiz') {
+				const selected = displayedChoice.choice;
+				if (displayedChoice.originalIndex === 0) { enterWalkHomeChoice(); return; }
+				if (displayedChoice.originalIndex === 1) {
+					showScenarioEnding('badEnding', 'BAD ENDING\nAn: “Mình đã vứt mất lời nhắn... giờ không ai biết chuyện này.”\nLời đe dọa vẫn chưa được người lớn biết đến. Hãy chơi lại, giữ bằng chứng và tìm người lớn đáng tin để được bảo vệ.', 'Chơi lại từ đầu', 'bad-ending');
+					return;
+				}
+				showGoodEnding();
+				return;
+			}
+			if (state.epilogue === 'checkpointDiscipline') {
+				state.route = 'discipline';
+				state.routeActions = state.outcomes.map(outcome => ({ day: outcome.day, title: outcome.title, action: outcome.action, points: outcome.points, feedback: outcome.feedback }));
+				state.active = true; state.answered = true;
+				player.x = 625; player.y = 355; player.facing = -1;
+				ui.choices.innerHTML = ''; ui.feedback.textContent = '';
+				renderPanel(); playDisciplineDialogue();
+				return;
+			}
+			if (state.epilogue === 'walkHome') {
+				if (displayedChoice.originalIndex === 0) { showSafeEnding(); return; }
+				startAlleyChase();
+				return;
+			}
+			if (state.epilogue === 'nightChoice') {
+				if (displayedChoice.originalIndex !== 0) {
+					showScenarioEnding('badEnding', 'BAD ENDING\nAn bị dồn vào hẻm cụt và tự đối đầu với nhóm bắt nạt. Hãy chơi lại và gọi công an để được hỗ trợ an toàn.', 'Chơi lại từ đầu', 'bad-ending');
+					return;
+				}
+				startPoliceAlleyStory();
+				return;
+			}
+			if (state.route === 'bad') {
+				const routeScene = badRoute[state.routeStep];
+				const selected = displayedChoice.choice;
+				updateLearningNote(selected[1]);
+				state.routeActions.push({ day: routeScene.day, title: routeScene.title, action: selected[0], points: selected[1], feedback: selected[2] });
+				ui.choices.querySelectorAll('.choice').forEach((button, i) => {
+					button.disabled = true;
+					if (i === index) button.classList.add(selected[1] >= 15 ? 'correct' : selected[1] >= 10 ? 'near' : 'wrong');
+				});
+				ui.feedback.textContent = `${selected[2]} (Tình huống đặc biệt, không cộng điểm an toàn.)`;
+				ui.next.textContent = state.routeStep === badRoute.length - 1 ? 'Kết thúc ngày 7 và xem đánh giá' : `Tiếp tục ngày ${badRoute[state.routeStep + 1].day}`;
+				ui.next.classList.remove('hidden'); renderPanel();
+				return;
+			}
+			if (state.route === 'discipline') {
+				const selected = displayedChoice.choice;
+				updateLearningNote(selected[1]);
+				state.routeActions.push({ day: 7, title: 'Buổi làm việc với thầy giám thị', action: selected[0], points: selected[1], feedback: selected[2] });
+				ui.choices.querySelectorAll('.choice').forEach((button, choiceIndex) => {
+					button.disabled = true;
+					if (choiceIndex === index) button.classList.add(selected[1] >= 15 ? 'correct' : 'wrong');
+				});
+				ui.text.textContent = selected[2];
+				ui.feedback.textContent = `Thầy giám thị: Quy trình xử lí và kế hoạch bảo vệ vẫn được thực hiện. (Tình huống đặc biệt, không cộng điểm an toàn.)`;
+				ui.next.textContent = 'Kết thúc game và xem đánh giá';
+				ui.next.classList.remove('hidden'); renderPanel();
+				return;
+			}
+			const scene = scenes[state.scene];
+			const choice = displayedChoice.choice;
+			const isGradedChoice = state.phase === 1 || Boolean(scene.responses);
+			const safetyPoints = state.scene < tenLevelSceneCount && isGradedChoice
+				? getQuizSafetyPoints(scene.level, choice[1])
+				: 0;
+			state.score = clamp(state.score + safetyPoints, 0, tenLevelMaxScore);
+			updateLearningNote(choice[1], isGradedChoice);
+			ui.choices.querySelectorAll('.choice').forEach((button, i) => {
+				button.disabled = true;
+				if (i === index) {
+					const status = choice[1] >= 15 ? 'correct' : choice[1] >= 10 ? 'near' : 'wrong';
+					button.classList.add(status);
+				}
+			});
+			const statusIcon = choice[1] >= 15 ? '✓ ' : choice[1] >= 10 ? '△ ' : '• ';
+			ui.feedback.textContent = state.scene < tenLevelSceneCount
+				? `${statusIcon}${choice[2]} (${safetyPoints > 0 ? '+' : ''}${safetyPoints} điểm an toàn)`
+				: `${statusIcon}${choice[2]} (Tình huống ngoài Level 1–10, không cộng điểm an toàn.)`;
+			if (state.phase === 0) {
+				state.branch = originalIndex;
+				state.phase = 1;
+				state.answered = false;
+				if (scene.responses) {
+					state.outcomes.push({ level: scene.level, day: scene.day, title: scene.title, action: choice[0], points: safetyPoints, feedback: choice[2] });
+				}
+				state.storyLines = state.scene < 2
+					? createLevelOneResponse(scene, originalIndex)
+					: createScenarioStory(scene, originalIndex);
+				state.storyIndex = 0;
+				ui.choices.innerHTML = '';
+				ui.feedback.textContent = '';
+				showStoryLine();
+				renderPanel();
+				return;
+			}
+			state.outcomes.push({ level: scene.level, day: scene.day, title: scene.title, action: choice[0], points: safetyPoints, feedback: choice[2] });
+			if (scene.routeOnWrong && state.branch !== 1) {
+				const initialChoice = scene.choices[state.branch];
+				state.route = 'bad'; state.routeStep = 0; state.answered = false;
+				state.routeActions.push({ day: 3, title: specialScene.title, action: initialChoice[0], points: initialChoice[1], feedback: initialChoice[2] });
+				const routeScene = badRoute[state.routeStep];
+				ui.speaker.textContent = routeScene.speaker; ui.text.textContent = routeScene.text;
+				ui.feedback.textContent = `Bạn đã đi theo lời rủ rê. ${initialChoice[2]}`;
+				renderChoices(routeScene.choices); ui.next.classList.add('hidden'); ui.summary.classList.add('hidden'); renderPanel();
+				return;
+			}
+			ui.next.textContent = state.scene === scenes.length - 1 ? 'Xem tổng kết 7 ngày' : 'Sang tình huống tiếp theo';
+			ui.next.classList.remove('hidden'); renderPanel();
+		}
+
+		function advanceScene(nextSceneIndex) {
+			state.scene = nextSceneIndex; state.phase = 0; state.branch = 0; state.dialogueIndex = 0; state.waitingForSceneAdvance = false; state.active = false; state.answered = false; ui.choices.innerHTML = ''; ui.feedback.textContent = '';
+			state.paperReadScene = -1; state.paperOpen = false; ui.paperOverlay.classList.add('hidden'); state.storyLines = []; state.storyIndex = 0;
+			if (state.scene >= tenLevelSceneCount) {
+				ui.speaker.textContent = 'An · tổng kết';
+				ui.text.textContent = getSafetyScore() >= 300 ? 'Bạn đã hoàn thành 10 Level với nhiều lựa chọn an toàn và biết tìm kiếm hỗ trợ.' : 'Hành trình đã kết thúc. Hãy xem lại các phản hồi để luyện cách xử lý an toàn hơn.';
+				ui.next.classList.add('hidden');
+				renderSummary();
+				if (getSafetyScore() > 350) {
+					ui.outro.classList.add('show');
+					ui.outro.setAttribute('aria-hidden', 'false');
+				}
+				setToast('Hoàn thành 10 Level!');
+			}
+			else { player.x = 120; player.y = 355; setToast(`Level ${scenes[state.scene].level} đã bắt đầu.`); }
+			renderPanel();
+		}
+
+		function playDisciplineDialogue(index = 0) {
+			if (state.route !== 'discipline') return;
+			if (index >= disciplineScene.dialogue.length) {
+				state.checkpointTimer = null;
+				state.answered = false;
+				ui.speaker.textContent = 'Nhân vật chính';
+				ui.text.textContent = 'Thầy Dũng chờ em trả lời.';
+				renderChoices(disciplineScene.choices);
+				return;
+			}
+			state.active = true; state.answered = true;
+			const [speaker, line] = disciplineScene.dialogue[index];
+			ui.speaker.textContent = speaker;
+			ui.text.textContent = line;
+			state.checkpointTimer = setTimeout(() => playDisciplineDialogue(index + 1), 3000);
+		}
+
+		function nextScene() {
+			if (state.transitioning) return;
+			ui.learningNote.classList.add('hidden');
+			ui.next.classList.add('hidden');
+			if (state.storyLines.length) {
+				state.storyIndex++;
+				if (state.storyIndex < state.storyLines.length) showStoryLine();
+				else {
+					state.storyLines = [];
+					const scene = scenes[state.scene];
+					const npcName = npcNameForScene(scene);
+					ui.speaker.textContent = `${npcName} · bạn cùng lớp`;
+					ui.text.textContent = `${npcName}: ${scene.followUps[state.branch].text}\n\nAn: Sau chuyện vừa xảy ra, mình nên phản hồi thế nào để giúp ${npcName} an toàn?`;
+					ui.feedback.textContent = '';
+					renderChoices(scene.followUps[state.branch].choices);
+					ui.next.classList.add('hidden');
+				}
+				renderPanel();
+				return;
+			}
+			const currentScene = scenes[state.scene];
+			if (!state.epilogue && currentScene?.dialogue && state.phase === 0 && !state.waitingForSceneAdvance) {
+				if (state.dialogueIndex < currentScene.dialogue.length - 1) {
+					state.dialogueIndex++;
+					const [speaker, line] = currentScene.dialogue[state.dialogueIndex];
+					ui.speaker.textContent = speaker;
+					ui.text.textContent = line;
+					ui.next.textContent = 'Tiếp tục hội thoại';
+					ui.next.classList.remove('hidden');
+				} else {
+					ui.speaker.textContent = 'An · học sinh';
+					ui.text.textContent = 'Bạn sẽ làm gì?';
+					renderChoices(currentScene.choices);
+				}
+				renderPanel();
+				return;
+			}
+			if (state.waitingForSceneAdvance) {
+				state.waitingForSceneAdvance = false;
+				advanceScene(state.scene + 1);
+				return;
+			}
+			if (state.epilogue === 'paperRead') return;
+			if (state.epilogue === 'classQuiz') {
+				state.epilogue = 'classDone'; state.active = true; ui.choices.innerHTML = ''; ui.feedback.textContent = '';
+				ui.next.textContent = 'Về menu chính'; ui.next.classList.remove('hidden');
+				renderPanel(); return;
+			}
+			if (state.epilogue === 'classDone') { returnToStartMenu(); return; }
+			if (!state.route && state.scene === tenLevelSceneCount - 1) {
+				const checkpointScore = getSafetyScore();
+				ui.score.textContent = `${checkpointScore} / 400`;
+				if (checkpointScore < 300) {
+					state.route = 'discipline'; state.active = true; state.transitioning = true;
+					state.routeActions = state.outcomes.map(outcome => ({ day: outcome.day, title: outcome.title, action: outcome.action, points: outcome.points, feedback: outcome.feedback }));
+					player.x = 625; player.y = 355; player.facing = -1;
+					ui.choices.innerHTML = ''; ui.next.classList.add('hidden');
+					renderPanel();
+					ui.score.textContent = `${checkpointScore} / 400`;
+					state.transitioning = false;
+					playDisciplineDialogue();
+					return;
+				}
+				if (checkpointScore >= 300 && checkpointScore <= 350) {
+					state.transitioning = true;
+					ui.transitionLabel.textContent = 'Bạn đã vượt qua những ngày hòa nhập với bạn bè trong tuần đầu tiên ở mức trung bình!';
+					ui.transition.classList.add('evaluation-cutscene', 'show');
+					state.checkpointTimer = setTimeout(() => {
+						state.checkpointTimer = null;
+						ui.transition.classList.remove('show', 'evaluation-cutscene');
+						state.transitioning = false;
+						renderCheckpointEvaluation(checkpointScore);
+					}, 3200);
+					return;
+				}
+				if (checkpointScore >= 351 && checkpointScore <= 400) {
+					renderCheckpointEvaluation(checkpointScore);
+					ui.outro.classList.add('show');
+					ui.outro.setAttribute('aria-hidden', 'false');
+					return;
+				}
+			}
+			if (state.route === 'discipline') {
+				state.route = 'evaluation'; state.answered = true; state.transitioning = true;
+				ui.choices.innerHTML = ''; ui.feedback.textContent = '';
+				ui.transitionLabel.innerHTML = '<strong>BAD ENDING</strong><span>Những Cung Đường Mất Mát</span>';
+				ui.transition.classList.add('evaluation-cutscene', 'bad-ending-cutscene', 'show');
+				setTimeout(() => {
+					renderNegativeEvaluation();
+					ui.transition.classList.remove('show', 'evaluation-cutscene', 'bad-ending-cutscene');
+					state.transitioning = false;
+				}, 2600);
+				return;
+			}
+			if (state.route === 'bad') {
+				if (state.routeStep < badRoute.length - 1) {
+					state.routeStep++; state.answered = false;
+					const routeScene = badRoute[state.routeStep];
+					if (routeScene.background === 'office') { player.x = 180; player.y = 355; }
+					ui.speaker.textContent = routeScene.speaker; ui.text.textContent = routeScene.text;
+					renderChoices(routeScene.choices); ui.feedback.textContent = ''; ui.next.classList.add('hidden'); renderPanel();
+					return;
+				}
+				state.route = 'discipline'; state.active = true; state.answered = true;
+				player.x = 625; player.y = 355; player.facing = -1;
+				ui.choices.innerHTML = ''; ui.feedback.textContent = '';
+				renderPanel(); playDisciplineDialogue();
+				return;
+			}
+			const nextSceneIndex = state.scene + 1;
+			const levelFinished = nextSceneIndex >= scenes.length || nextSceneIndex % 2 === 0;
+			if (!levelFinished) { advanceScene(nextSceneIndex); return; }
+			state.transitioning = true;
+			ui.transitionLabel.textContent = nextSceneIndex >= scenes.length ? 'Hành trình hoàn tất' : `Level ${scenes[nextSceneIndex].level} · ${scenes[nextSceneIndex].levelTitle}`;
+			ui.transition.classList.add('show');
+			setTimeout(() => {
+				advanceScene(nextSceneIndex);
+				setTimeout(() => { ui.transition.classList.remove('show'); state.transitioning = false; }, 420);
+			}, 2600);
+		}
+
+		function showSevenLevelBadEnding(reply) {
+			state.epilogue = 'disciplineBadEnding'; state.active = true; state.answered = true;
+			ui.escapeFail.classList.add('hidden');
+			ui.choices.innerHTML = ''; ui.next.classList.add('hidden'); ui.feedback.textContent = '';
+			renderPanel();
+			ui.score.textContent = `${getSafetyScore()} / 400`;
+			ui.text.textContent = `${reply} Nhà trường yêu cầu phụ huynh đến làm việc và đón An về. Sự việc sẽ được xác minh; các bạn bị ảnh hưởng được hỗ trợ theo quy trình của trường.`;
+			renderSummary();
+			ui.continue.classList.add('hidden');
+		}
+
+		function renderSummary() {
+			const safeCount = state.outcomes.filter(outcome => outcome.points >= 15).length;
+			const carefulCount = state.outcomes.filter(outcome => outcome.points < 15).length;
+			const advice = safeCount >= 10 ? 'Bạn ưu tiên an toàn, tôn trọng quyền riêng tư và biết tìm người lớn hỗ trợ.' : 'Hãy luyện thêm việc giữ bằng chứng, không đối đầu một mình và báo người lớn đáng tin.';
+			const checkpointScore = getSafetyScore();
+			const rating = checkpointScore >= 351 ? 'Xuất sắc' : checkpointScore >= 300 ? 'Đạt yêu cầu' : 'Cần rèn luyện';
+			ui.summary.innerHTML = `<h3>Đánh giá 10 level đầu</h3><p><strong>${rating} · ${checkpointScore} / 400 điểm</strong><br>${advice}</p>${scoreTableMarkup()}<p><strong>${safeCount}</strong> lựa chọn an toàn · <strong>${carefulCount}</strong> lựa chọn cần suy nghĩ thêm.</p>`;
+			ui.summary.classList.remove('hidden');
+			ui.continue.classList.remove('hidden');
+		}
+
+		function renderNegativeEvaluation() {
+			state.active = true; state.answered = true;
+			const riskCount = state.routeActions.filter(action => action.points < 15).length;
+			const protectiveCount = state.routeActions.length - riskCount;
+			const totalPoints = state.routeActions.reduce((total, action) => total + action.points, 0);
+			const assessment = `Bạn đã có ${riskCount} lựa chọn làm tăng hoặc chưa giảm được nguy cơ, và ${protectiveCount} lựa chọn tìm cách bảo vệ mọi người. Những lựa chọn an toàn về sau có ích, nhưng không xóa được hậu quả đã xảy ra.`;
+			ui.speaker.textContent = 'Đánh giá · sau ngày 7';
+			ui.text.textContent = `${assessment} Hãy nói chuyện với người lớn đáng tin cậy nếu tình huống này gợi nhớ đến điều đang xảy ra ngoài đời.`;
+			ui.summary.innerHTML = `<h3>Những Cung Đường Mất Mát</h3><p>${assessment}</p><table><thead><tr><th>Ngày</th><th>Tình huống</th><th>Lựa chọn</th><th>Nhận xét</th></tr></thead><tbody>${state.routeActions.map(action => `<tr><td>${action.day}</td><td>${action.title}</td><td>${action.action}</td><td class="${action.points >= 15 ? 'positive' : 'needs-care'}">${action.points >= 15 ? 'Giảm nguy cơ' : 'Tăng / chưa giảm nguy cơ'} (${action.points} điểm)</td></tr>`).join('')}</tbody></table><p><strong>${totalPoints} / ${state.routeActions.length * 20} điểm</strong> · <strong>${riskCount}</strong> lựa chọn cần xem lại · <strong>${protectiveCount}</strong> lựa chọn bảo vệ.</p>`;
+			ui.summary.classList.remove('hidden');
+			ui.continue.classList.add('hidden');
+			ui.next.classList.add('hidden');
+			renderPanel();
+		}
+
+		function continueAfterEvaluation() {
+			state.epilogue = 'outside'; state.active = false; state.answered = false; state.intro = false;
+			player.x = 120; player.y = 355;
+			ui.summary.classList.add('hidden'); ui.continue.classList.add('hidden'); ui.continue.textContent = 'Tiếp tục'; ui.choices.innerHTML = ''; ui.feedback.textContent = '';
+			renderPanel();
+		}
+
+		function reset() { if (state.paperTimer) clearInterval(state.paperTimer); if (state.checkpointTimer) clearTimeout(state.checkpointTimer); if (state.openingTimer) clearTimeout(state.openingTimer); state.paperTimer = null; state.checkpointTimer = null; state.openingTimer = null; state.skippingIntroduction = false; ui.skipIntroduction.classList.add('hidden'); ui.continueIntroduction.classList.add('hidden'); ui.continueIntroduction.onclick = null; state.tutorialDirections.clear(); state.tutorialDirectionTimes = { up: 0, down: 0, left: 0, right: 0 }; state.opening = ''; state.tutorialStep = ''; state.motherChoice = null; state.score = 0; state.scene = 0; state.phase = 0; state.branch = 0; state.dialogueIndex = 0; state.waitingForSceneAdvance = false; state.paperSamplesCollected = false; state.paperReadScene = -1; state.paperOpen = false; ui.paperOverlay.classList.add('hidden'); state.storyLines = []; state.storyIndex = 0; state.intro = true; state.epilogue = ''; state.route = ''; state.routeStep = 0; state.routeActions = []; state.outcomes = []; state.displayedChoices = []; state.lastCorrectPosition = -1; state.correctPositionStreak = 0; state.active = false; state.answered = false; state.transitioning = false; player.x = 120; player.y = 355; player.facing = 1; ui.transition.classList.remove('show', 'evaluation-cutscene', 'objective-cutscene', 'rules-cutscene', 'mission-cutscene', 'tip-cutscene', 'gameplay-cutscene', 'tutorial-cutscene', 'title-card-cutscene'); ui.transition.setAttribute('aria-hidden', 'true'); ui.outro.classList.remove('show'); ui.outro.setAttribute('aria-hidden', 'true'); ui.escapeFail.classList.add('hidden'); ui.escapeFail.classList.remove('good-ending', 'safe-ending', 'bad-ending', 'true-ending'); ui.choices.innerHTML = ''; ui.feedback.textContent = ''; ui.learningNote.classList.add('hidden'); ui.summary.innerHTML = ''; ui.summary.classList.add('hidden'); ui.continue.classList.add('hidden'); ui.next.classList.add('hidden'); renderPanel(); setToast('Đã bắt đầu lại.'); }
+		function update(delta) {
+			if (state.confirmationAction) { player.moving = false; return; }
+			const movementAllowed = state.opening.startsWith('home') || state.epilogue || state.route || state.intro || state.paperReadScene === state.scene;
+			const alleyChase = ['chaseAlley1', 'chaseAlley2', 'chaseAlley3'].includes(state.epilogue);
+			if (state.started && !state.active && movementAllowed && (state.opening === 'homeTutorial' || state.opening === 'homeMother' || state.opening === 'homeExit' || state.scene < scenes.length || ['outside', 'escape', 'hallway', 'classroom', 'walkHome', 'chaseAlley1', 'chaseAlley2', 'chaseAlley3'].includes(state.epilogue))) {
+				let x = 0, y = 0; if (keys.w || keys.ArrowUp) y--; if (keys.s || keys.ArrowDown) y++; if (keys.a || keys.ArrowLeft) x--; if (keys.d || keys.ArrowRight) x++;
+				if (mobileInput.active) { x = mobileInput.x; y = mobileInput.y; }
+				player.moving = x !== 0 || y !== 0;
+				if (player.moving) {
+					const length = Math.hypot(x, y);
+					player.x = clamp(player.x + x / length * player.speed * delta, state.opening.startsWith('home') ? 45 : 35, state.opening.startsWith('home') ? 755 : alleyChase ? 715 : 765);
+					player.y = clamp(player.y + y / length * player.speed * delta, alleyChase ? 330 : 65, alleyChase ? 420 : 440);
+					if (x) player.facing = x > 0 ? 1 : -1;
+					if (alleyChase && player.x >= (state.alleyStage === 3 ? 650 : 715)) {
+						player.moving = false;
+						advanceAlleyChase();
+					}
+					if (state.opening === 'homeTutorial' && state.tutorialStep === 'move' && !isTouchDevice) {
+						const directions = [];
+						if (y < 0) directions.push('up');
+						if (y > 0) directions.push('down');
+						if (x < 0) directions.push('left');
+						if (x > 0) directions.push('right');
+						let progressChanged = false;
+						for (const direction of directions) {
+							state.tutorialDirectionTimes[direction] = Math.min(1.5, state.tutorialDirectionTimes[direction] + delta);
+							if (state.tutorialDirectionTimes[direction] >= 1.5 && !state.tutorialDirections.has(direction)) {
+								state.tutorialDirections.add(direction);
+								progressChanged = true;
+							}
+						}
+						if (progressChanged) renderPanel();
+						if (state.tutorialDirections.size === 4) showInteractPrompt();
+					}
+				}
+			} else player.moving = false;
+			if (state.epilogue === 'alleyPolice' && !state.policeDialogueStarted) {
+				state.policeArrivalProgress = Math.min(1, state.policeArrivalProgress + delta / 1.5);
+			}
+			if (state.epilogue === 'alleyPolice' && state.policeArrestStarted) {
+				state.policeArrestProgress = Math.min(1, state.policeArrestProgress + delta / 3.5);
+			}
+			if (state.opening === 'homeMother' && !state.active && state.tutorialStep === 'talk' && distance(player, motherActor) < 76) ui.text.textContent = 'Mẹ đang ở gần. Nhấn E để trò chuyện.';
+			if (state.opening === 'homeExit' && !state.active) renderPanel();
+		}
+		function loop(time) { const delta = Math.min(.04, (time - state.last) / 1000 || 0); state.last = time; update(delta); drawScene(time); requestAnimationFrame(loop); }
+		ui.mobileStick.addEventListener('pointerdown', event => {
+			if (!isTouchDevice || !state.started || state.confirmationAction) return;
+			event.preventDefault();
+			mobileInput.pointerId = event.pointerId;
+			ui.mobileStick.setPointerCapture(event.pointerId);
+			updateMobileStick(event);
+		});
+		ui.mobileStick.addEventListener('pointermove', event => {
+			if (event.pointerId !== mobileInput.pointerId) return;
+			event.preventDefault();
+			updateMobileStick(event);
+		});
+		ui.mobileStick.addEventListener('pointerup', event => { if (event.pointerId === mobileInput.pointerId) releaseMobileStick(); });
+		ui.mobileStick.addEventListener('pointercancel', event => { if (event.pointerId === mobileInput.pointerId) releaseMobileStick(); });
+		ui.mobileStick.addEventListener('lostpointercapture', event => { if (event.pointerId === mobileInput.pointerId) releaseMobileStick(); });
+		ui.mobileInteract.addEventListener('click', () => { if (isTouchDevice) interact(); });
+		ui.skipHome.addEventListener('click', () => leaveHome(true));
+		ui.skipIntroduction.addEventListener('click', skipGameIntroduction);
+		document.addEventListener('fullscreenchange', () => {
+			if (!document.fullscreenElement && state.started) document.body.classList.remove('game-fullscreen');
+		});
+		document.getElementById('playBtn').addEventListener('click', () => {
+			document.body.classList.add('game-fullscreen');
+			if (!document.fullscreenElement) {
+				if (document.documentElement.requestFullscreen) {
+					document.documentElement.requestFullscreen().catch(error => {
+						console.warn('Unable to enter fullscreen; using the full-viewport game layout instead.', error);
+						setToast('Không thể bật chế độ toàn màn hình; game sẽ mở rộng theo màn hình trang.');
+					});
+				} else {
+					console.warn('Fullscreen is not supported; using the full-viewport game layout instead.');
+					setToast('Trình duyệt không hỗ trợ chế độ toàn màn hình; game sẽ mở rộng theo màn hình trang.');
+				}
+			}
+			if (isTouchDevice && screen.orientation?.lock) {
+				screen.orientation.lock('landscape').catch(error => console.warn('Unable to lock screen orientation; using the on-screen landscape layout instead.', error));
+			}
+			startGameIntroduction();
+		});
+		document.getElementById('quitBtn').addEventListener('click', () => openConfirmation('quit'));
+		ui.confirmYes.addEventListener('click', confirmAction);
+		ui.confirmNo.addEventListener('click', closeConfirmation);
+		ui.confirmOverlay.addEventListener('click', event => { if (event.target === ui.confirmOverlay) closeConfirmation(); });
+		ui.continue.addEventListener('click', continueAfterEvaluation);
+		document.getElementById('returnMenuBtn').addEventListener('click', event => {
+			if (event.currentTarget.textContent === 'Chơi lại từ đầu') openConfirmation('restart');
+			else handleEndingAction();
+		});
+		window.addEventListener('keydown', event => {
+			if (state.confirmationAction) {
+				if (event.key === 'Escape') closeConfirmation();
+				event.preventDefault();
+				return;
+			}
+			if (!state.started) return;
+			const key = event.key.startsWith('Arrow') ? event.key : event.key.toLowerCase();
+			keys[key] = true;
+			if (key === 'e' && !event.repeat) interact();
+			if (event.key === ' ') event.preventDefault();
+		});
+		window.addEventListener('keyup', event => { const key = event.key.startsWith('Arrow') ? event.key : event.key.toLowerCase(); keys[key] = false; });
+		ui.next.addEventListener('click', nextScene); ui.reset.addEventListener('click', () => openConfirmation('restart'));
+		document.getElementById('outroContinue').addEventListener('click', () => {
+			ui.outro.classList.remove('show');
+			ui.outro.setAttribute('aria-hidden', 'true');
+		});
+		renderPanel(); requestAnimationFrame(loop);
+	</script>
+</body>
+</html>
